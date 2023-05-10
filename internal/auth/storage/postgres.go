@@ -49,16 +49,27 @@ func (s storage) DeletePassword(userID uint32) error {
 }
 
 func (s storage) GetHash(userID uint32) (auth.PasswordHash, error) {
-	//TODO implement me
-	panic("implement me")
+	var hash auth.PasswordHash
+	err := s.db.Model(&auth.PasswordHash{}).
+		Where(&auth.PasswordHash{UserID: userID}).
+		First(&hash).
+		Error
+	return hash, err
 }
 
 func (s storage) DeleteProvider(userID uint32, provider string) error {
-	//TODO implement me
-	panic("implement me")
+	err := s.db.Model(&auth.OAuthProvider{}).
+		Where(&auth.OAuthProvider{UserID: userID, OAuthProvider: provider}).
+		Delete(&auth.OAuthProvider{}).
+		Error
+	return err
 }
 
 func (s storage) GetProvider(userID uint32, provider string) (auth.OAuthProvider, error) {
-	//TODO implement me
-	panic("implement me")
+	var _provider auth.OAuthProvider
+	err := s.db.Model(&auth.OAuthProvider{}).
+		Where(&auth.OAuthProvider{UserID: userID, OAuthProvider: provider}).
+		First(&_provider).
+		Error
+	return _provider, err
 }
