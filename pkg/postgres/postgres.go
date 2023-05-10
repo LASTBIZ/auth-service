@@ -15,7 +15,6 @@ func NewClient(ctx context.Context, maxAttemps int, sc config.Postgres) *gorm.DB
 	var pool *gorm.DB
 	var err error
 	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", sc.Host, sc.User, sc.Password, sc.DB, sc.Port)
-	fmt.Println(dsn)
 	err = utils.DoWithTries(func() error {
 		_, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()

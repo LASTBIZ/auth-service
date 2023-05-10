@@ -26,7 +26,7 @@ func (s Service) UpdatePassword(hash string, userID uint32) error {
 }
 
 func (s Service) GetHash(userID uint32) (string, error) {
-
+	return "nil", nil
 }
 
 func (s Service) CreateProvider(
@@ -35,7 +35,7 @@ func (s Service) CreateProvider(
 	refreshToken string,
 	expiryDate time.Time,
 	userID uint32) error {
-
+	return nil
 }
 
 func (s Service) UpdateProvider(
@@ -44,5 +44,5 @@ func (s Service) UpdateProvider(
 	refreshToken string,
 	expiryDate time.Time,
 	userID uint32) error {
-
+	return nil
 }

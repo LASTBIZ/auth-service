@@ -6,17 +6,17 @@ import (
 )
 
 type storage struct {
-	db gorm.DB
+	db *gorm.DB
 }
 
-func NewAuthStorage(db gorm.DB) auth.Storage {
+func NewAuthStorage(db *gorm.DB) auth.Storage {
 	return &storage{
 		db: db,
 	}
 }
 
 func (s storage) CreatePassword(hash auth.PasswordHash) error {
-	err := s.db.Create(&hash).Error
+	err := s.db.Save(hash).Error
 	return err
 }
 
