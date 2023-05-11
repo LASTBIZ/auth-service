@@ -3,7 +3,6 @@ package password
 import (
 	"context"
 	"errors"
-	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"lastbiz/auth-service/internal/auth"
 	storage2 "lastbiz/auth-service/internal/storage"
@@ -31,16 +30,14 @@ const (
 
 func (s Storage) CreatePassword(ctx context.Context, m map[string]interface{}) error {
 	sql, args, buildErr := s.queryBuilder.
-		Insert(table).
+		Insert(tableScheme).
 		SetMap(m).
 		ToSql()
 	logger := logging.WithFields(ctx, map[string]interface{}{
 		"sql":   sql,
-		"table": table,
+		"table": tableScheme,
 		"args":  args,
 	})
-
-	fmt.Println(sql)
 
 	if buildErr != nil {
 		buildErr = db.ErrCreateQuery(buildErr)
@@ -83,7 +80,7 @@ func (s Storage) UpdatePassword(ctx context.Context, id uint32, m map[string]int
 		execErr = db.ErrDoQuery(execErr)
 		logger.Error(execErr)
 		return execErr
-	} else if exec.RowsAffected() == 0 || !exec.Insert() {
+	} else if exec.RowsAffected() == 0 || !exec.Update() {
 		execErr = db.ErrDoQuery(errors.New("password was not created. 0 rows were affected"))
 		logger.Error(execErr)
 		return execErr
@@ -114,7 +111,7 @@ func (s Storage) DeletePassword(ctx context.Context, id uint32) error {
 		execErr = db.ErrDoQuery(execErr)
 		logger.Error(execErr)
 		return execErr
-	} else if exec.RowsAffected() == 0 || !exec.Insert() {
+	} else if exec.RowsAffected() == 0 || !exec.Delete() {
 		execErr = db.ErrDoQuery(errors.New("password was not created. 0 rows were affected"))
 		logger.Error(execErr)
 		return execErr

@@ -3,13 +3,13 @@ package auth
 import "time"
 
 type PasswordHash struct {
-	ID     string
+	ID     uint32
 	UserID uint32
 	Hash   string
 }
 
 type OAuthProvider struct {
-	ID            int
+	ID            uint32
 	UserID        uint32
 	OAuthProvider string
 	AccessToken   string

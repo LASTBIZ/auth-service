@@ -20,7 +20,7 @@ type jwtClaims struct {
 	Email string
 }
 
-func (w *JwtWrapper) GenerateToken(user user.User) (signedToken string, err error) {
+func (w *JwtWrapper) GenerateToken(user *user.User) (signedToken string, err error) {
 	claims := &jwtClaims{
 		Id:    user.Id,
 		Email: user.Email,
@@ -37,7 +37,6 @@ func (w *JwtWrapper) GenerateToken(user user.User) (signedToken string, err erro
 	if err != nil {
 		return "", err
 	}
-
 	return signedToken, nil
 }
 
