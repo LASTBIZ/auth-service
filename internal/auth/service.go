@@ -1,50 +1,38 @@
 package auth
 
 import (
-	"time"
+	"context"
+	"lastbiz/auth-service/internal/password"
+	"lastbiz/auth-service/internal/provider"
+	"lastbiz/auth-service/internal/utils"
+	"lastbiz/auth-service/pkg/pb/auth"
 )
 
 type Service struct {
-	//storage Storage
+	passService     password.Service
+	providerService provider.Service
+	Jwt             utils.JwtWrapper
 }
 
-func NewAuthService() Service {
-	return Service{}
+func NewAuthService(passService password.Service, providerService provider.Service) *Service {
+	return &Service{
+		passService:     passService,
+		providerService: providerService,
+	}
 }
 
-func (s Service) CreatePassword(hash string, userID uint32) error {
-	//var _hash PasswordHash
-	//_hash = PasswordHash{UserID: userID, Hash: hash}
-	//return s.storage.CreatePassword(_hash)
-	return nil
+func (s Service) Register(ctx context.Context, req *auth.RegisterRequest) (*auth.RegisterResponse, error) {
+
 }
 
-func (s Service) UpdatePassword(hash string, userID uint32) error {
+func (s Service) RegisterByProvider(ctx context.Context) {
 
-	//var _hash PasswordHash
-	//_hash = PasswordHash{UserID: userID, Hash: hash}
-	//return s.storage.UpdatePassword(_hash)
-	return nil
 }
 
-func (s Service) GetHash(userID uint32) (string, error) {
-	return "nil", nil
+func (s Service) Login(ctx context.Context) {
+
 }
 
-func (s Service) CreateProvider(
-	provider string,
-	accessToken string,
-	refreshToken string,
-	expiryDate time.Time,
-	userID uint32) error {
-	return nil
-}
+func (s Service) LoginByProvider(ctx context.Context) {
 
-func (s Service) UpdateProvider(
-	provider string,
-	accessToken string,
-	refreshToken string,
-	expiryDate time.Time,
-	userID uint32) error {
-	return nil
 }

@@ -5,14 +5,20 @@ package auth;
 option go_package = "./pkg/pb/auth";
 
 service AuthService {
-  rpc Register(RegisterRequest) returns (RegisterResponse) {}
-  rpc Login(LoginRequest) returns (LoginResponse) {}
+  rpc RegisterByPassword(RegisterByPasswordRequest) returns (RegisterResponse) {}
+  rpc RegisterByProvider(RegisterByProviderRequest) returns (RegisterResponse) {}
+  rpc LoginByPassword(LoginByPasswordRequest) returns (LoginResponse) {}
   rpc Validate(ValidateRequest) returns (ValidateResponse) {}
 }
 
 // Register
 
-message RegisterRequest {
+message RegisterByPasswordRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message RegisterByProviderRequest {
   string email = 1;
   string password = 2;
 }
@@ -24,7 +30,7 @@ message RegisterResponse {
 
 // Login
 
-message LoginRequest {
+message LoginByPasswordRequest {
   string email = 1;
   string password = 2;
 }
