@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"fmt"
 	"github.com/devfeel/mapper"
 	"lastbiz/auth-service/pkg/errors"
 	"time"
@@ -22,6 +21,5 @@ func (p *OAuthProvider) ToMap() (map[string]interface{}, error) {
 	if err != nil {
 		return providerMap, errors.Wrap(err, "mapper.Decode(provider)")
 	}
-	fmt.Println(providerMap)
 	return providerMap, nil
 }

@@ -2,25 +2,27 @@ syntax = "proto3";
 
 package auth;
 
-option go_package = "./pkg/pb/auth";
+option go_package = "./pkg/auth";
 
 service AuthService {
-  rpc RegisterByPassword(RegisterByPasswordRequest) returns (RegisterResponse) {}
-  rpc RegisterByProvider(RegisterByProviderRequest) returns (RegisterResponse) {}
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
   rpc LoginByPassword(LoginByPasswordRequest) returns (LoginResponse) {}
   rpc Validate(ValidateRequest) returns (ValidateResponse) {}
-  rpc RefreshToken(RefreshTokenRequest) returns()
+  rpc RefreshToken(RefreshTokenRequest) returns(RefreshTokenRequest) {}
 }
 
 // Register
-message RegisterByPasswordRequest {
+message RegisterRequest {
   string email = 1;
   string password = 2;
+  ProviderCode code = 3;
+  string first_name = 4;
+  string last_name = 5;
 }
 
-message RegisterByProviderRequest {
-  string email = 1;
-  string password = 2;
+message ProviderCode {
+  string oauth_code = 1;
+  string provider = 2;
 }
 
 message RegisterResponse {

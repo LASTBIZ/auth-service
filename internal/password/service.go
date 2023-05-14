@@ -1,7 +1,6 @@
 package password
 
 import (
-	"context"
 	"lastbiz/auth-service/pkg/errors"
 )
 
@@ -15,14 +14,14 @@ func NewPasswordService(storage Storage) *Service {
 	}
 }
 
-func (s Service) CreatePassword(ctx context.Context, hash *Hash) error {
+func (s Service) CreatePassword(hash *Hash) error {
 	err := s.storage.CreatePassword(*hash)
 	return err
 }
 
 func (s Service) UpdatePassword(userID uint32, hash *Hash) error {
 	if hash.Hash == "" {
-		return errors.New("hash is empty")
+		return errors.New("hash not found")
 	}
 	err := s.storage.UpdatePassword(userID, hash.Hash)
 	return err
@@ -33,5 +32,8 @@ func (s Service) DeletePassword(userID uint32) error {
 }
 
 func (s Service) GetHash(userID uint32) (*Hash, error) {
+	if userID == 0 {
+		return nil, errors.New("hash not found")
+	}
 	return s.storage.GetHash(userID)
 }
