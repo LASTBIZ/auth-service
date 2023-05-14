@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"lastbiz/auth-service/internal/auth"
 )
 
 type Service struct {
@@ -15,7 +14,7 @@ func NewProviderService(storage Storage) *Service {
 	}
 }
 
-func (s Service) CreateProvider(ctx context.Context, provider *auth.OAuthProvider) error {
+func (s Service) CreateProvider(ctx context.Context, provider *OAuthProvider) error {
 	providerStorageMap, err := provider.ToMap()
 	if err != nil {
 		return err
@@ -24,7 +23,7 @@ func (s Service) CreateProvider(ctx context.Context, provider *auth.OAuthProvide
 	return err
 }
 
-func (s Service) UpdateProvider(ctx context.Context, userID uint32, provider string, providerStruct *auth.OAuthProvider) error {
+func (s Service) UpdateProvider(ctx context.Context, userID uint32, provider string, providerStruct *OAuthProvider) error {
 	providerStorageMap, err := providerStruct.ToMap()
 	if err != nil {
 		return err
@@ -37,6 +36,6 @@ func (s Service) DeletePassword(ctx context.Context, userID uint32, provider str
 	return s.storage.DeleteProvider(ctx, userID, provider)
 }
 
-func (s Service) GetProvider(ctx context.Context, userID uint32, provider string) (*auth.OAuthProvider, error) {
+func (s Service) GetProvider(ctx context.Context, userID uint32, provider string) (*OAuthProvider, error) {
 	return s.storage.GetProvider(ctx, userID, provider)
 }

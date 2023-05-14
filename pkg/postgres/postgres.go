@@ -5,17 +5,33 @@ import (
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"lastbiz/auth-service/internal/config"
-	"lastbiz/auth-service/pkg/utils"
 	"log"
 	"time"
 )
 
-func NewClient(ctx context.Context, maxAttemps int, sc config.Postgres) *gorm.DB {
+type pgConfig struct {
+	Username string
+	Password string
+	Host     string
+	Port     string
+	Database string
+}
+
+func NewPGConfig(username, password, host, port, database string) *pgConfig {
+	return &pgConfig{
+		username,
+		password,
+		host,
+		port,
+		database,
+	}
+}
+
+func NewClient(ctx context.Context, maxAttempts int, maxDelay time.Duration, cfg *pgConfig) *gorm.DB {
 	var pool *gorm.DB
 	var err error
-	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", sc.Host, sc.User, sc.Password, sc.DB, sc.Port)
-	err = utils.DoWithTries(func() error {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s database=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", cfg.Host, cfg.Username, cfg.Password, cfg.Database, cfg.Port)
+	err = DoWithTries(func() error {
 		_, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 
@@ -24,10 +40,25 @@ func NewClient(ctx context.Context, maxAttemps int, sc config.Postgres) *gorm.DB
 			return err
 		}
 		return nil
-	}, maxAttemps, 5*time.Second)
+	}, maxAttempts, maxDelay)
 
 	if err != nil {
-		log.Fatal("error to connect in PostgreSQL max attemtps")
+		log.Fatal("All attempts are exceeded. Unable to connect to postgres")
 	}
 	return pool
+}
+
+func DoWithTries(fn func() error, attemtps int, delay time.Duration) (err error) {
+	for attemtps > 0 {
+		if err = fn(); err != nil {
+			time.Sleep(delay)
+			attemtps--
+
+			continue
+		}
+
+		return nil
+	}
+
+	return
 }

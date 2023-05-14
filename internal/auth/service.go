@@ -21,7 +21,7 @@ func NewAuthService(passService password.Service, providerService provider.Servi
 	}
 }
 
-func (s Service) Register(ctx context.Context, req *auth.RegisterRequest) (*auth.RegisterResponse, error) {
+func (s Service) Register(ctx context.Context, req *auth.RegisterByPasswordRequest) (*auth.RegisterResponse, error) {
 
 }
 

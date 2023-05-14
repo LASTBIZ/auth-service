@@ -2,14 +2,14 @@ syntax = "proto3";
 
 package user_proto;
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
-option go_package = "./pkg/pb/user";
+option go_package = "./pkg/user/";
 
 service UserService {
-  rpc getUser(UserGetRequest) returns (User) {}
-  rpc CreateUser(User) returns (User) {}
-  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {}
-  rpc UpdateUser(User) returns(User) {}
+  rpc GetUser(UserGetRequest) returns (UserResponse) {}
+  rpc GetUserByEmail(UserByEmailRequest) returns (UserResponse) {}
+  rpc CreateUser(User) returns (UserResponse) {}
+  rpc DeleteUser(DeleteUserRequest) returns (UserResponse) {}
+  rpc UpdateUser(User) returns(UserResponse) {}
 }
 
 message DeleteUserRequest {
@@ -18,6 +18,16 @@ message DeleteUserRequest {
 
 message UserGetRequest {
   uint32 user_id = 1;
+}
+
+message UserByEmailRequest {
+  string email = 1;
+}
+
+message UserResponse {
+  int64 status = 1;
+  User user = 2;
+  string error = 3;
 }
 
 message User {
