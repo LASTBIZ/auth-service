@@ -32,7 +32,8 @@ func NewAuthService(
 
 func (s Service) Register(ctx context.Context, req *auth.RegisterRequest) (*auth.RegisterResponse, error) {
 	if req.GetCode() != nil {
-
+		state := utils.GenerateState()
+		s.providerService.
 	} else if strings.TrimSpace(req.GetPassword()) != "" {
 		hashPass := utils.HashPassword(req.GetPassword())
 

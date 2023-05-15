@@ -21,8 +21,7 @@ message RegisterRequest {
 }
 
 message ProviderCode {
-  string oauth_code = 1;
-  string provider = 2;
+  string provider = 1;
 }
 
 message RegisterResponse {

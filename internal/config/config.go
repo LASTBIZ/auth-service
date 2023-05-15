@@ -17,6 +17,18 @@ type Config struct {
 		DB       string `yaml:"db" env:"POSTGRES_DATABASE" env-required:"true"`
 		Port     string `yaml:"port" env:"POSTGRES_PORT" env-required:"true"`
 	} `yaml:"postgresql"`
+	Providers []struct {
+		Google struct {
+			ClientID         string `yaml:"client_id" env:"GOOGLE_CLIENT_ID" env-required:"true"`
+			ClientSecret     string `yaml:"client_secret" env:"GOOGLE_CLIENT_SECRET" env-required:"true"`
+			OAuthRedirectURl string `yaml:"o_auth_redirect_u_rl" env:"GOOGLE_OAUTH_REDIRECT_URL" env-required:"true"`
+		} `yaml:"google"`
+		Facebook struct {
+			ClientID         string `yaml:"client_id" env:"FACEBOOK_CLIENT_ID" env-required:"true"`
+			ClientSecret     string `yaml:"client_secret" env:"FACEBOOK_CLIENT_SECRET" env-required:"true"`
+			OAuthRedirectURl string `yaml:"o_auth_redirect_u_rl" env:"FACEBOOK_OAUTH_REDIRECT_URL" env-required:"true"`
+		} `yaml:"facebook"`
+	} `yaml:"providers"`
 }
 
 var instance *Config
