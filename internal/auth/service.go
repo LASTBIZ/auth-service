@@ -32,8 +32,23 @@ func NewAuthService(
 
 func (s Service) Register(ctx context.Context, req *auth.RegisterRequest) (*auth.RegisterResponse, error) {
 	if req.GetCode() != nil {
+		//TODO add redis for state save and check
 		state := utils.GenerateState()
-		s.providerService.
+		providerByName, err := s.providerService.GetProviderByName(req.GetCode().GetProvider())
+
+		if err != nil {
+			return &auth.RegisterResponse{
+				Status: http.StatusNotFound,
+				Error:  "providerByName not found",
+			}, err
+		}
+
+		url := providerByName.GenerateOAuthToken(state)
+
+		return &auth.RegisterResponse{
+			Status:   http.StatusPermanentRedirect,
+			Redirect: url,
+		}, err
 	} else if strings.TrimSpace(req.GetPassword()) != "" {
 		hashPass := utils.HashPassword(req.GetPassword())
 

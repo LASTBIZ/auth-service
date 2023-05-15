@@ -7,20 +7,33 @@ import (
 )
 
 type Service struct {
-	storage Storage
+	storage        Storage
+	providers      map[string]Provider
+	providersNames []string
 }
 
-var providers []string
-
-func NewProviderService(storage Storage) *Service {
-	providers = []string{"google", "facebook"}
+func NewProviderService(storage Storage, providers map[string]Provider) *Service {
+	keys := make([]string, 0, len(providers))
+	for k := range providers {
+		keys = append(keys, k)
+	}
 	return &Service{
-		storage: storage,
+		storage:        storage,
+		providers:      providers,
+		providersNames: keys,
 	}
 }
 
+func (s Service) GetProviderByName(name string) (Provider, error) {
+	val, ok := s.providers[name]
+	if !ok {
+		return nil, errors.New("provider not found")
+	}
+	return val, nil
+}
+
 func (s Service) CreateProvider(provider *OAuthProvider) error {
-	if utils.Contains(providers, provider.Provider) {
+	if utils.Contains(s.providersNames, provider.Provider) {
 		return errors.New("provider not found")
 	}
 	err := s.storage.CreateProvider(*provider)
@@ -34,7 +47,7 @@ func (s Service) UpdateProvider(
 	refreshToken string,
 	expiryDate time.Time,
 ) error {
-	if utils.Contains(providers, provider) {
+	if utils.Contains(s.providersNames, provider) {
 		return errors.New("provider not found")
 	}
 	err := s.storage.UpdateProvider(
