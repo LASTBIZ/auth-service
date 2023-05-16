@@ -74,4 +74,10 @@ message CallbackRequest {
 message CallbackResponse {
   int64 status = 1;
   string error = 2;
+  Token token = 3;
+}
+
+message Token {
+  string access_token = 1;
+  string refresh_token = 2;
 }

@@ -234,9 +234,47 @@ func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*
 	result, err := s.userService.GetUserByEmail(ctx, &user.UserByEmailRequest{
 		Email: providerUser.Email,
 	})
-
+	u := &user.User{}
 	if result.Status == 404 && result.GetError() == "User not found" {
 		//Create user and provider
+		createUser := &user.User{
+			LastName:  providerUser.GivenName,
+			FirstName: providerUser.FamilyName,
+			Email:     providerUser.Email,
+			IsVerify:  providerUser.VerifyEmail,
+		}
+		resultUser, err := s.userService.CreateUser(ctx, createUser)
+		if err != nil {
+			return &auth.CallbackResponse{
+				Status: http.StatusInternalServerError,
+				Error:  "error create user",
+			}, nil
+		}
+		if resultUser.Status != 201 {
+			//todo catch error
+			return &auth.CallbackResponse{
+				Status: http.StatusInternalServerError,
+				Error:  "error create user",
+			}, nil
+		}
+		u = resultUser.User
+	} else if result.GetStatus() == 200 {
+		resultUser, err := s.userService.GetUserByEmail(ctx, &user.UserByEmailRequest{
+			Email: providerUser.Email,
+		})
+		if err != nil {
+			return &auth.CallbackResponse{
+				Status: http.StatusInternalServerError,
+				Error:  "error get user",
+			}, nil
+		}
+		if resultUser.GetStatus() != 200 {
+			return &auth.CallbackResponse{
+				Status: http.StatusInternalServerError,
+				Error:  "error get user",
+			}, nil
+		}
+		u = resultUser.GetUser()
 	}
 
 	if result.GetStatus() != 200 {
@@ -247,4 +285,9 @@ func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*
 	}
 	//User exists login
 	//generate token access_token refresh_token
+	accessToken, err := s.Jwt.GenerateToken(u)
+	refreshToken, err := s.Jwt.GenerateToken(u)
+	return &auth.CallbackResponse{
+		Status: http.StatusOK,
+	}, nil
 }
