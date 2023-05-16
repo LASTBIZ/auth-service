@@ -2,7 +2,7 @@ package utils
 
 import (
 	"errors"
-	"lastbiz/auth-service/pkg/pb/user"
+	"lastbiz/auth-service/pkg/user"
 	"time"
 
 	"github.com/golang-jwt/jwt"

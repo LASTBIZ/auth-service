@@ -38,16 +38,6 @@ func NewFacebookProvider(
 	}
 }
 
-type FacebookUserResult struct {
-	Email       string
-	FamilyName  string
-	GivenName   string
-	Locale      string
-	Name        string
-	VerifyEmail bool
-	Picture     string
-}
-
 func (f Facebook) GenerateOAuthToken(state string) (url string) {
 	return f.conf.AuthCodeURL(state)
 }
@@ -57,7 +47,7 @@ func (f Facebook) Callback(code string) (*oauth2.Token, error) {
 	return token, err
 }
 
-func (f Facebook) GetUser(token *oauth2.Token) (interface{}, error) {
+func (f Facebook) GetUser(token *oauth2.Token) (*provider.User, error) {
 	client := f.conf.Client(context.Background(), token)
 	response, err := client.Get(FacebookUserAPI + url.QueryEscape(token.AccessToken))
 	if err != nil {
@@ -79,7 +69,7 @@ func (f Facebook) GetUser(token *oauth2.Token) (interface{}, error) {
 		return nil, err
 	}
 
-	userBody := &FacebookUserResult{
+	userBody := &provider.User{
 		Email:       GoogleUserRes["email"].(string),
 		VerifyEmail: false,
 		Name:        GoogleUserRes["name"].(string),

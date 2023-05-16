@@ -8,7 +8,7 @@ service AuthService {
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
   rpc LoginByPassword(LoginByPasswordRequest) returns (LoginResponse) {}
   rpc Validate(ValidateRequest) returns (ValidateResponse) {}
-  rpc RefreshToken(RefreshTokenRequest) returns(RefreshTokenRequest) {}
+  rpc RefreshToken(RefreshTokenRequest) returns(RefreshTokenResponse) {}
   rpc Callback(CallbackRequest) returns (CallbackResponse) {}
 }
 
@@ -68,6 +68,7 @@ message RefreshTokenResponse {
 message CallbackRequest {
   string provider = 1;
   string oauth_code = 2;
+  string state = 3;
 }
 
 message CallbackResponse {

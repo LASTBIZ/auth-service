@@ -16,25 +16,35 @@ type Service struct {
 	providerService provider.Service
 	Jwt             utils.JwtWrapper
 	userService     user.UserServiceClient
+	authRedis       authRedis
+	auth.UnimplementedAuthServiceServer
 }
 
 func NewAuthService(
 	passService password.Service,
 	providerService provider.Service,
 	userService user.UserServiceClient,
-) *Service {
-	return &Service{
+	authRedis authRedis,
+) auth.AuthServiceServer {
+	return Service{
 		passService:     passService,
 		providerService: providerService,
 		userService:     userService,
+		authRedis:       authRedis,
+		//Jwt: nil,
 	}
 }
 
 func (s Service) Register(ctx context.Context, req *auth.RegisterRequest) (*auth.RegisterResponse, error) {
-	if req.GetCode() != nil {
-		//TODO add redis for state save and check
-		state := utils.GenerateState()
-		providerByName, err := s.providerService.GetProviderByName(req.GetCode().GetProvider())
+	if req.GetProvider() != "" {
+		state, err := s.authRedis.CreateState(ctx)
+		if err != nil {
+			return &auth.RegisterResponse{
+				Status: http.StatusInternalServerError,
+				Error:  "error create state",
+			}, err
+		}
+		providerByName, err := s.providerService.GetProviderByName(req.GetProvider())
 
 		if err != nil {
 			return &auth.RegisterResponse{
@@ -104,6 +114,137 @@ func (s Service) Login(ctx context.Context) {
 
 }
 
-func (s Service) LoginByProvider(ctx context.Context) {
+func (s Service) Validate(ctx context.Context, request *auth.ValidateRequest) (*auth.ValidateResponse, error) {
+	token := request.GetToken()
+	if strings.TrimSpace(token) == "" {
+		return &auth.ValidateResponse{
+			Status: http.StatusNotFound,
+			Error:  "token not found",
+		}, nil
+	}
 
+	tok, err := s.Jwt.ValidateToken(token)
+	if err != nil {
+		return &auth.ValidateResponse{
+			Status: http.StatusNotFound,
+			Error:  "token not found",
+		}, nil
+	}
+	return &auth.ValidateResponse{
+		Status: http.StatusOK,
+		UserId: int64(tok.Id),
+	}, nil
+}
+
+func (s Service) RefreshToken(ctx context.Context, request *auth.RefreshTokenRequest) (*auth.RefreshTokenResponse, error) {
+	token := request.GetRefreshToken()
+	if strings.TrimSpace(token) == "" {
+		return &auth.RefreshTokenResponse{
+			Status: http.StatusNotFound,
+			Error:  "token not found",
+		}, nil
+	}
+
+	tok, err := s.Jwt.ValidateToken(token)
+	if err != nil {
+		return &auth.RefreshTokenResponse{
+			Status: http.StatusNotFound,
+			Error:  "token not found",
+		}, nil
+	}
+
+	u, err := s.userService.GetUser(ctx, &user.UserGetRequest{
+		UserId: tok.Id,
+	})
+
+	accessToken, err := s.Jwt.GenerateToken(u.GetUser())
+
+	if err != nil {
+		return &auth.RefreshTokenResponse{
+			Status: http.StatusInternalServerError,
+			Error:  "error create token",
+		}, nil
+	}
+
+	refreshToken, err := s.Jwt.GenerateToken(u.GetUser())
+
+	if err != nil {
+		return &auth.RefreshTokenResponse{
+			Status: http.StatusInternalServerError,
+			Error:  "error create token",
+		}, nil
+	}
+
+	return &auth.RefreshTokenResponse{
+		Status:       http.StatusOK,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*auth.CallbackResponse, error) {
+	state := request.GetState()
+	if strings.TrimSpace(state) == "" {
+		return &auth.CallbackResponse{
+			Status: http.StatusConflict,
+			Error:  "state not found",
+		}, nil
+	}
+
+	ok, err := s.authRedis.CheckState(ctx, state)
+	if err != nil {
+		return &auth.CallbackResponse{
+			Status: http.StatusConflict,
+			Error:  "state not found",
+		}, nil
+	}
+	if !ok {
+		return &auth.CallbackResponse{
+			Status: http.StatusConflict,
+			Error:  "state not found",
+		}, nil
+	}
+
+	providerName := request.GetProvider()
+
+	provider, err := s.providerService.GetProviderByName(providerName)
+	if err != nil {
+		return &auth.CallbackResponse{
+			Status: http.StatusConflict,
+			Error:  "provider not found",
+		}, nil
+	}
+
+	tokenSource, err := provider.Callback(request.GetOauthCode())
+	if err != nil {
+		return &auth.CallbackResponse{
+			Status: http.StatusInternalServerError,
+			Error:  "error validate code",
+		}, nil
+	}
+
+	providerUser, err := provider.GetUser(tokenSource)
+	if err != nil {
+		return &auth.CallbackResponse{
+			Status: http.StatusInternalServerError,
+			Error:  "error getUser",
+		}, nil
+	}
+
+	result, err := s.userService.GetUserByEmail(ctx, &user.UserByEmailRequest{
+		Email: providerUser.Email,
+	})
+
+	if result.Status == 404 && result.GetError() == "User not found" {
+		//Create user and provider
+	}
+
+	if result.GetStatus() != 200 {
+		return &auth.CallbackResponse{
+			Status: http.StatusNotFound,
+			Error:  "not found",
+		}, nil
+	}
+	//User exists login
+	//generate token access_token refresh_token
 }

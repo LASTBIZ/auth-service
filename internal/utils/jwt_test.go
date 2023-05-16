@@ -2,7 +2,7 @@ package utils
 
 import (
 	"github.com/stretchr/testify/assert"
-	"lastbiz/auth-service/pkg/pb/user"
+	"lastbiz/auth-service/pkg/user"
 	"testing"
 )
 

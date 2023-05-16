@@ -57,7 +57,7 @@ func (g Google) Callback(code string) (*oauth2.Token, error) {
 	return token, err
 }
 
-func (g Google) GetUser(token *oauth2.Token) (interface{}, error) {
+func (g Google) GetUser(token *oauth2.Token) (*provider.User, error) {
 	client := g.conf.Client(context.Background(), token)
 	response, err := client.Get(GoogleUserAPI + url.QueryEscape(token.AccessToken))
 	if err != nil {
@@ -79,14 +79,14 @@ func (g Google) GetUser(token *oauth2.Token) (interface{}, error) {
 		return nil, err
 	}
 
-	userBody := &GoogleUserResult{
+	userBody := &provider.User{
 		Email:       GoogleUserRes["email"].(string),
 		VerifyEmail: GoogleUserRes["verified_email"].(bool),
 		Name:        GoogleUserRes["name"].(string),
 		GivenName:   GoogleUserRes["given_name"].(string),
 		FamilyName:  GoogleUserRes["family_name"].(string),
 		Picture:     GoogleUserRes["picture"].(string),
-		Locale:      GoogleUserRes["locale"].(string),
+		//Locale:      GoogleUserRes["locale"].(string),
 	}
 
 	return userBody, err
