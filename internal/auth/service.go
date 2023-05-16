@@ -289,5 +289,9 @@ func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*
 	refreshToken, err := s.Jwt.GenerateToken(u)
 	return &auth.CallbackResponse{
 		Status: http.StatusOK,
+		Token: &auth.Token{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+		},
 	}, nil
 }
