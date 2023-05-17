@@ -9,9 +9,10 @@ import (
 func TestHashPassword(t *testing.T) {
 
 	jwt := &JwtWrapper{
-		SecretKey:       "",
-		Issuer:          "",
-		ExpirationHours: 100,
+		SecretKey:              "",
+		Issuer:                 "",
+		ExpirationHoursAccess:  100,
+		ExpirationHoursRefresh: 100,
 	}
 
 	tests := []struct {
@@ -33,7 +34,7 @@ func TestHashPassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			token, err := jwt.GenerateToken(tt.input)
+			token, err := jwt.GenerateTokenAccess(tt.input)
 			claims, err := jwt.ValidateToken(token)
 			if tt.wantErr {
 				assert.Error(t, err)

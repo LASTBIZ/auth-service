@@ -6,7 +6,7 @@ import (
 
 type OAuthProvider struct {
 	ID           uint32 `mapper:"id"`
-	UserID       uint32 `mapper:"user_id"`
+	UserID       uint32 `mapper:"user_id" gorm:"unique"`
 	Provider     string `mapper:"provider"`
 	AccessToken  string `mapper:"access_token"`
 	RefreshToken string `mapper:"refresh_token"`

@@ -49,3 +49,11 @@ func (s Storage) GetProvider(userID uint32, provider string) (*OAuthProvider, er
 		First(&getProvider)
 	return &getProvider, result.Error
 }
+
+func (s Storage) CheckProvider(userID uint32) (*OAuthProvider, error) {
+	var getProvider OAuthProvider
+	result := s.db.
+		Where("user_id = ?", userID).
+		First(&getProvider)
+	return &getProvider, result.Error
+}

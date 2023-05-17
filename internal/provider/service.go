@@ -66,3 +66,7 @@ func (s Service) DeletePassword(userID uint32, provider string) error {
 func (s Service) GetProvider(userID uint32, provider string) (*OAuthProvider, error) {
 	return s.storage.GetProvider(userID, provider)
 }
+
+func (s Service) CheckProvider(userID uint32) (*OAuthProvider, error) {
+	return s.storage.CheckProvider(userID)
+}

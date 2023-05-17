@@ -10,14 +10,25 @@ import (
 type Config struct {
 	GRPCPort       string `yaml:"grpc_port" env:"GRPC_PORT" env-required:"true"`
 	UserServiceURL string `yaml:"userServiceURL" env:"USER_SERVICE_URL" env-required:"true"`
-	Postgres       struct {
+	JWT            struct {
+		SecretKey              string `yaml:"secret_key" env:"SECRET_KEY" env-required:"true"`
+		Issuer                 string `yaml:"issuer" env:"ISSUER" env-required:"true"`
+		ExpirationHoursAccess  int    `yaml:"expiry_access_token" env:"EXPIRY_ACCESS_TOKEN" env-required:"true"`
+		ExpirationHoursRefresh int    `yaml:"expiry_refresh_token" env:"EXPIRY_REFRESH_TOKEN" env-required:"true"`
+	} `yaml:"jwt"`
+	Postgres struct {
 		Host     string `yaml:"host" env:"POSTGRES_HOST" env-required:"true"`
-		User     string `yaml:"host" env:"POSTGRES_USER" env-required:"true"`
+		User     string `yaml:"user" env:"POSTGRES_USER" env-required:"true"`
 		Password string `yaml:"password" env:"POSTGRES_PASSWORD" env-required:"true"`
 		DB       string `yaml:"db" env:"POSTGRES_DATABASE" env-required:"true"`
 		Port     string `yaml:"port" env:"POSTGRES_PORT" env-required:"true"`
 	} `yaml:"postgresql"`
-	Providers []struct {
+	Redis struct {
+		Host     string `yaml:"host" env:"REDIS_HOST" env-required:"true"`
+		Port     string `yaml:"port" env:"REDIS_PORT" env-required:"true"`
+		Password string `yaml:"redis" env:"REDIS_PASSWORD" env-required:"true"`
+	} `yaml:"redis"`
+	Providers struct {
 		Google struct {
 			ClientID         string `yaml:"client_id" env:"GOOGLE_CLIENT_ID" env-required:"true"`
 			ClientSecret     string `yaml:"client_secret" env:"GOOGLE_CLIENT_SECRET" env-required:"true"`
