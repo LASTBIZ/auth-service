@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"lastbiz/auth-service/internal/password"
+	"lastbiz/auth-service/internal/provider"
 	"log"
 	"time"
 )
@@ -45,6 +47,8 @@ func NewClient(ctx context.Context, maxAttempts int, maxDelay time.Duration, cfg
 	if err != nil {
 		log.Fatal("All attempts are exceeded. Unable to connect to postgres")
 	}
+	pool.AutoMigrate(&provider.OAuthProvider{})
+	pool.AutoMigrate(&password.Hash{})
 	return pool
 }
 
