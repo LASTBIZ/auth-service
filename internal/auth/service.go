@@ -130,6 +130,17 @@ func (s Service) Validate(ctx context.Context, request *auth.ValidateRequest) (*
 			Error:  "token not found",
 		}, nil
 	}
+	//check user is exists
+	u, err := s.userService.GetUser(ctx, &user.UserGetRequest{
+		UserId: tok.Id,
+	})
+	if u.Status != 200 {
+		return &auth.ValidateResponse{
+			Status: http.StatusNotFound,
+			Error:  "user not found",
+		}, nil
+	}
+
 	return &auth.ValidateResponse{
 		Status: http.StatusOK,
 		UserId: int64(tok.Id),
@@ -157,7 +168,7 @@ func (s Service) RefreshToken(ctx context.Context, request *auth.RefreshTokenReq
 		UserId: tok.Id,
 	})
 
-	accessToken, err := s.Jwt.GenerateToken(u.GetUser())
+	accessToken, err := s.Jwt.GenerateTokenAccess(u.GetUser())
 
 	if err != nil {
 		return &auth.RefreshTokenResponse{
@@ -166,7 +177,7 @@ func (s Service) RefreshToken(ctx context.Context, request *auth.RefreshTokenReq
 		}, nil
 	}
 
-	refreshToken, err := s.Jwt.GenerateToken(u.GetUser())
+	refreshToken, err := s.Jwt.GenerateTokenRefresh(u.GetUser())
 
 	if err != nil {
 		return &auth.RefreshTokenResponse{
@@ -207,7 +218,7 @@ func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*
 
 	providerName := request.GetProvider()
 
-	provider, err := s.providerService.GetProviderByName(providerName)
+	pr, err := s.providerService.GetProviderByName(providerName)
 	if err != nil {
 		return &auth.CallbackResponse{
 			Status: http.StatusConflict,
@@ -215,7 +226,7 @@ func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*
 		}, nil
 	}
 
-	tokenSource, err := provider.Callback(request.GetOauthCode())
+	tokenSource, err := pr.Callback(request.GetOauthCode())
 	if err != nil {
 		return &auth.CallbackResponse{
 			Status: http.StatusInternalServerError,
@@ -223,7 +234,7 @@ func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*
 		}, nil
 	}
 
-	providerUser, err := provider.GetUser(tokenSource)
+	providerUser, err := pr.GetUser(tokenSource)
 	if err != nil {
 		return &auth.CallbackResponse{
 			Status: http.StatusInternalServerError,
@@ -235,6 +246,7 @@ func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*
 		Email: providerUser.Email,
 	})
 	u := &user.User{}
+
 	if result.Status == 404 && result.GetError() == "User not found" {
 		//Create user and provider
 		createUser := &user.User{
@@ -257,6 +269,23 @@ func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*
 				Error:  "error create user",
 			}, nil
 		}
+
+		createProvider := &provider.OAuthProvider{
+			UserID:       resultUser.GetUser().GetId(),
+			Provider:     strings.ToLower(providerName),
+			AccessToken:  tokenSource.AccessToken,
+			RefreshToken: tokenSource.RefreshToken,
+			ExpiryDate:   tokenSource.Expiry,
+			TokenType:    tokenSource.TokenType,
+		}
+		err = s.providerService.CreateProvider(createProvider)
+		if err != nil {
+			return &auth.CallbackResponse{
+				Status: http.StatusInternalServerError,
+				Error:  "error create provider",
+			}, nil
+		}
+
 		u = resultUser.User
 	} else if result.GetStatus() == 200 {
 		resultUser, err := s.userService.GetUserByEmail(ctx, &user.UserByEmailRequest{
@@ -274,6 +303,15 @@ func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*
 				Error:  "error get user",
 			}, nil
 		}
+		_, err = s.providerService.GetProvider(resultUser.GetUser().GetId(), strings.ToLower(providerName))
+		if err != nil {
+			//TODO check exists in db is not create is exists update for user register by password
+			//return &auth.CallbackResponse{
+			//	Status: http.StatusInternalServerError,
+			//	Error:  "error create provider",
+			//}, nil
+		}
+
 		u = resultUser.GetUser()
 	}
 
@@ -285,8 +323,8 @@ func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*
 	}
 	//User exists login
 	//generate token access_token refresh_token
-	accessToken, err := s.Jwt.GenerateToken(u)
-	refreshToken, err := s.Jwt.GenerateToken(u)
+	accessToken, err := s.Jwt.GenerateTokenAccess(u)
+	refreshToken, err := s.Jwt.GenerateTokenRefresh(u)
 	return &auth.CallbackResponse{
 		Status: http.StatusOK,
 		Token: &auth.Token{
