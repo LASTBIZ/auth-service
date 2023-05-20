@@ -4,6 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"lastbiz/auth-service/internal/auth"
+	"lastbiz/auth-service/internal/auth/services"
 	"lastbiz/auth-service/internal/config"
 	"lastbiz/auth-service/internal/password"
 	"lastbiz/auth-service/internal/provider"
@@ -12,6 +13,7 @@ import (
 	auth2 "lastbiz/auth-service/pkg/auth"
 	"lastbiz/auth-service/pkg/logging"
 	"lastbiz/auth-service/pkg/postgres"
+	"lastbiz/auth-service/pkg/project"
 	"lastbiz/auth-service/pkg/redis"
 	"lastbiz/auth-service/pkg/user"
 	"net"
@@ -63,8 +65,18 @@ func main() {
 	providerService := provider.NewProviderService(*providerStorage, prs)
 	logging.Info(ctx, "connect user service")
 	userService := user.InitServiceClient(ctx, cfg)
+
+	projectService := project.InitServiceClient(ctx, cfg)
+
 	authRedis := auth.NewAuthRedis(redisClient)
-	authService := auth.NewAuthService(*passService, *providerService, userService, *authRedis, jwt)
+	authService := services.NewAuthService(
+		*passService,
+		*providerService,
+		userService,
+		*authRedis,
+		jwt,
+		projectService,
+	)
 
 	lis, err := net.Listen("tcp", "0.0.0.0:"+cfg.GRPCPort)
 

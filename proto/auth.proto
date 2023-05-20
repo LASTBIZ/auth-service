@@ -11,6 +11,18 @@ service AuthService {
   rpc RefreshToken(RefreshTokenRequest) returns(RefreshTokenResponse) {}
   rpc Callback(CallbackRequest) returns (CallbackResponse) {}
   rpc CheckRegister(CheckRegisterRequest) returns(CheckRegisterResponse) {}
+  rpc ChangePassword(ChangePasswordRequest) returns(ChangePasswordResponse) {}
+}
+
+message ChangePasswordRequest {
+  string password = 1;
+  string new_password = 2;
+  string email = 3;
+}
+
+message ChangePasswordResponse {
+  int64 status = 1;
+  string error = 2;
 }
 
 // Register

@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package project;
+import "project/investor.proto";
+import "project/roadmap.proto";
+import "project/date.proto";
+
+option go_package = "./pkg/project";
+
+service ProjectService {
+  rpc CreateProject(CreateProjectRequest) returns (CreateProjectResponse) {}
+  rpc DeleteProject(DeleteProjectRequest) returns (DeleteProjectResponse) {}
+  rpc UpdateProject(UpdateProjectRequest) returns (UpdateProjectResponse) {}
+  rpc GetProjectByID(GetProjectByIdRequest) returns (GetProjectByIdResponse) {}
+  rpc GetProjects(GetProjectsRequest) returns (GetProjectsResponse) {}
+  rpc AddRoadmap(CreateRoadmapRequest) returns (RoadmapResponse) {}
+  rpc RemoveRoadmap(DeleteRoadmapRequest) returns(RoadmapResponse) {}
+  rpc AddInvestor(AddInvestorRequest) returns(InvestorResponse) {}
+  rpc RemoveInvestor(RemoveInvestorRequest) returns(InvestorResponse) {}
+  rpc AddMoney(MoneyRequest) returns (InvestorResponse) {}
+  rpc RemoveMoney(MoneyRequest) returns (InvestorResponse) {}
+  rpc SetMoney(MoneyRequest) returns (InvestorResponse) {}
+  rpc InvestProject(InvestProjectRequest) returns (InvestorResponse) {}
+}
+
+message Images {
+  string roadmap_img_url = 1;
+  string main_image_url = 2;
+}
+
+message Budget {
+  uint64 current = 1;
+  uint64 need = 2;
+}
+
+message Project {
+  uint64 id = 1;
+  Images images = 2;
+  Date dates = 3;
+  Budget budgets = 4;
+  string location = 5;
+  string name = 6;
+  string description = 7;
+  string industry = 8;
+  repeated Investor investors = 9;
+  repeated RoadMap roadmaps = 10;
+  uint32 organization_id = 11;
+}
+
+message CreateProjectRequest {
+  Project project = 1;
+}
+
+message CreateProjectResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message DeleteProjectRequest {
+  int64 project_id = 1;
+}
+
+message DeleteProjectResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message UpdateProjectRequest {
+  int64 project_id = 1;
+  Project project = 2;
+}
+
+message UpdateProjectResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message GetProjectByIdRequest {
+  int64 project_id = 1;
+}
+
+message GetProjectByIdResponse {
+  int64 status = 1;
+  string error = 2;
+  Project project = 3;
+}
+
+message GetProjectsRequest {
+  int64 page = 1;
+  int64 page_size = 2;
+}
+
+message GetProjectsResponse {
+  int64 status = 1;
+  string error = 2;
+  repeated Project projects = 3;
+}

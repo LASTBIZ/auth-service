@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package project;
+import "google/protobuf/timestamp.proto";
+
+option go_package = "./pkg/project";
+
+message Date {
+  google.protobuf.Timestamp start_date = 1;
+  google.protobuf.Timestamp end_date = 2;
+}

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package project;
+
+option go_package = "./pkg/project";
+import "project/date.proto";
+
+message RoadMap {
+  uint64 id = 1;
+  Date dates = 2;
+  string name = 3;
+  string description = 4;
+  string job = 5;
+  string target = 6;
+}
+
+message CreateRoadmapRequest {
+  RoadMap roadmap = 1;
+  uint32 project_id = 2;
+}
+
+message RoadmapResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message DeleteRoadmapRequest {
+  uint32 roadmap_id = 1;
+  uint32 project_id = 2;
+}

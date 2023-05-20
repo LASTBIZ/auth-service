@@ -3,6 +3,17 @@ proto:
 				   --go_out=. -I=proto \
 				   --go_opt=paths=import \
 				   proto/*.proto
-
+proto project:
+	protoc --go_out=. -I=proto \
+				   --go_opt=paths=import \
+				   --go-grpc_out=. -I=proto \
+				   --go-grpc_opt=paths=import \
+				   proto/project/*.proto
+proto user:
+	protoc --go_out=. -I=proto \
+				   --go_opt=paths=import \
+				   --go-grpc_out=. -I=proto \
+				   --go-grpc_opt=paths=import \
+				   proto/project/*.proto
 server:
 	go run cmd/main.go
