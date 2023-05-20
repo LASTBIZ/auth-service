@@ -32,6 +32,6 @@ func (s Storage) DeletePassword(userID uint32) error {
 func (s Storage) GetHash(userID uint32) (*Hash, error) {
 	var getHash Hash
 	result := s.db.Where("user_id = ?", userID).
-		First(getHash)
+		First(&getHash)
 	return &getHash, result.Error
 }

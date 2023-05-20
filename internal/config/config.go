@@ -26,7 +26,7 @@ type Config struct {
 	Redis struct {
 		Host     string `yaml:"host" env:"REDIS_HOST" env-required:"true"`
 		Port     string `yaml:"port" env:"REDIS_PORT" env-required:"true"`
-		Password string `yaml:"redis" env:"REDIS_PASSWORD" env-required:"true"`
+		Password string `yaml:"password" env:"REDIS_PASSWORD" env-required:"true"`
 	} `yaml:"redis"`
 	Providers struct {
 		Google struct {

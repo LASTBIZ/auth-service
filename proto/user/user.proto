@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package user_proto;
 import "google/protobuf/timestamp.proto";
+import "user/messenger.proto";
 option go_package = "./pkg/user/";
 
 service UserService {
@@ -9,7 +10,9 @@ service UserService {
   rpc GetUserByEmail(UserByEmailRequest) returns (UserResponse) {}
   rpc CreateUser(User) returns (UserResponse) {}
   rpc DeleteUser(DeleteUserRequest) returns (UserResponse) {}
-  rpc UpdateUser(User) returns(UserResponse) {}
+  rpc UpdateUser(User) returns (UserResponse) {}
+  rpc AddMessenger(AddMessengerRequest) returns (AddMessengerResponse){}
+  rpc RemoveMessenger(RemoveMessengerRequest) returns (RemoveMessengerResponse) {}
 }
 
 message DeleteUserRequest {
@@ -41,18 +44,7 @@ message User {
   google.protobuf.Timestamp created_at = 8;
   google.protobuf.Timestamp updated_at = 9;
   repeated Messenger messengers = 10;
-  Organization organization = 11;
+  string organization = 11;
   bool blocked = 12;
   string role = 13;
-}
-
-message Messenger {
-  uint32 id = 1;
-  string name = 2;
-  string value = 3;
-}
-
-message Organization {
-  uint32 id = 1;
-  string name = 2;
 }

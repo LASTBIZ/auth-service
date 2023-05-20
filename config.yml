@@ -1,0 +1,26 @@
+grpc_port: 5002
+userServiceURL: 0.0.0.0:5001
+postgresql:
+  host: 127.0.0.1
+  port: 5432
+  user: test
+  password: example
+  db: test
+redis:
+  host: 127.0.0.1
+  port: 111
+  password: empty
+jwt:
+  secret_key: test
+  issuer: test
+  expiry_access_token: 1
+  expiry_refresh_token: 1000
+providers:
+  google:
+    client_id: empty
+    client_secret: empty
+    o_auth_redirect_u_rl: empty
+  facebook:
+    client_id: empty
+    client_secret: empty
+    o_auth_redirect_u_rl: empty

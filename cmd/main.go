@@ -39,7 +39,7 @@ func main() {
 	passService := password.NewPasswordService(*passStorage)
 
 	providerStorage := provider.NewProviderStorage(*pgClient)
-	var prs map[string]provider.Provider
+	prs := make(map[string]provider.Provider, 0)
 	prs["google"] = providers.NewGoogleProvider(
 		cfg.Providers.Google.ClientID,
 		cfg.Providers.Google.ClientSecret,
@@ -66,7 +66,7 @@ func main() {
 	authRedis := auth.NewAuthRedis(redisClient)
 	authService := auth.NewAuthService(*passService, *providerService, userService, *authRedis, jwt)
 
-	lis, err := net.Listen("tcp", cfg.GRPCPort)
+	lis, err := net.Listen("tcp", "0.0.0.0:"+cfg.GRPCPort)
 
 	if err != nil {
 		logging.GetLogger().Fatal(err)

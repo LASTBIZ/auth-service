@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "./pkg/user/";
+
+message Messenger {
+  uint32 id = 1;
+  string name = 2;
+  string value = 3;
+}
+
+message AddMessengerResponse {
+  int64 status = 1;
+  Messenger messenger = 2;
+  string error = 3;
+}
+
+message AddMessengerRequest {
+  Messenger messenger = 1;
+  uint32 user_id = 2;
+}
+
+message RemoveMessengerRequest {
+  uint32 messenger_id = 1;
+  uint32 user_id = 2;
+}
+
+message RemoveMessengerResponse {
+  int64 status = 1;
+  string error = 2;
+}
