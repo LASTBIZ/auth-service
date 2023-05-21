@@ -17,7 +17,7 @@ func (s Service) Validate(ctx context.Context, request *auth.ValidateRequest) (*
 		}, nil
 	}
 
-	tok, err := s.Jwt.ValidateToken(token)
+	tok, err := s.Jwt.ValidateToken(token, "access")
 	if err != nil {
 		return &auth.ValidateResponse{
 			Status: http.StatusNotFound,

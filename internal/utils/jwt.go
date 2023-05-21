@@ -21,21 +21,22 @@ type jwtClaims struct {
 	Email string
 }
 
+// TODO maybe save in redis
 func (w *JwtWrapper) GenerateTokenRefresh(user *user.User) (signedToken string, err error) {
-	return w.generateToken(user, w.ExpirationHoursRefresh)
+	return w.generateToken(user, w.ExpirationHoursRefresh, w.Issuer)
 }
 
 func (w *JwtWrapper) GenerateTokenAccess(user *user.User) (signedToken string, err error) {
-	return w.generateToken(user, w.ExpirationHoursAccess)
+	return w.generateToken(user, w.ExpirationHoursAccess, "refresh")
 }
 
-func (w *JwtWrapper) generateToken(user *user.User, expiryTime int64) (signedToken string, err error) {
+func (w *JwtWrapper) generateToken(user *user.User, expiryTime int64, issuer string) (signedToken string, err error) {
 	claims := &jwtClaims{
 		Id:    user.Id,
 		Email: user.Email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(expiryTime)).Unix(),
-			Issuer:    w.Issuer,
+			Issuer:    issuer,
 		},
 	}
 
@@ -49,7 +50,7 @@ func (w *JwtWrapper) generateToken(user *user.User, expiryTime int64) (signedTok
 	return signedToken, nil
 }
 
-func (w *JwtWrapper) ValidateToken(signedToken string) (claims *jwtClaims, err error) {
+func (w *JwtWrapper) ValidateToken(signedToken, tokenType string) (claims *jwtClaims, err error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&jwtClaims{},
@@ -70,6 +71,10 @@ func (w *JwtWrapper) ValidateToken(signedToken string) (claims *jwtClaims, err e
 
 	if claims.ExpiresAt < time.Now().Local().Unix() {
 		return nil, errors.New("JWT is expired")
+	}
+
+	if tokenType == "refresh" && claims.Issuer != "refresh" {
+		return nil, errors.New("token not refresh")
 	}
 
 	return claims, nil

@@ -54,6 +54,7 @@ func (s Service) LoginByPassword(ctx context.Context, request *auth.LoginByPassw
 	}
 
 	token, err := s.Jwt.GenerateTokenAccess(u.GetUser())
+	refresh, err := s.Jwt.GenerateTokenRefresh(u.GetUser())
 
 	if err != nil {
 		return &auth.LoginResponse{
@@ -64,6 +65,9 @@ func (s Service) LoginByPassword(ctx context.Context, request *auth.LoginByPassw
 
 	return &auth.LoginResponse{
 		Status: http.StatusOK,
-		Token:  token,
+		Token: &auth.Token{
+			AccessToken:  token,
+			RefreshToken: refresh,
+		},
 	}, nil
 }

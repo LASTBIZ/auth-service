@@ -17,7 +17,7 @@ func (s Service) RefreshToken(ctx context.Context, request *auth.RefreshTokenReq
 		}, nil
 	}
 
-	tok, err := s.Jwt.ValidateToken(token)
+	tok, err := s.Jwt.ValidateToken(token, "refresh")
 	if err != nil {
 		return &auth.RefreshTokenResponse{
 			Status: http.StatusNotFound,

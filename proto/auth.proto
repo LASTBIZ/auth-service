@@ -65,7 +65,7 @@ message LoginByPasswordRequest {
 message LoginResponse {
   int64 status = 1;
   string error = 2;
-  string token = 3;
+  Token token = 3;
 }
 
 // Validate
