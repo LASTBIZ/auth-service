@@ -1,82 +1,68 @@
 package utils
 
 import (
-	"errors"
-	"lastbiz/auth-service/pkg/user"
+	"encoding/base64"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
-type JwtWrapper struct {
-	SecretKey              string
-	Issuer                 string
-	ExpirationHoursAccess  int64
-	ExpirationHoursRefresh int64
-}
-
-type jwtClaims struct {
-	jwt.StandardClaims
-	Id    uint32
-	Email string
-}
-
-// TODO maybe save in redis
-func (w *JwtWrapper) GenerateTokenRefresh(user *user.User) (signedToken string, err error) {
-	return w.generateToken(user, w.ExpirationHoursRefresh, w.Issuer)
-}
-
-func (w *JwtWrapper) GenerateTokenAccess(user *user.User) (signedToken string, err error) {
-	return w.generateToken(user, w.ExpirationHoursAccess, "refresh")
-}
-
-func (w *JwtWrapper) generateToken(user *user.User, expiryTime int64, issuer string) (signedToken string, err error) {
-	claims := &jwtClaims{
-		Id:    user.Id,
-		Email: user.Email,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(expiryTime)).Unix(),
-			Issuer:    issuer,
-		},
+func CreateToken(ttl time.Duration, payload interface{}, privateKey string) (string, error) {
+	decodedPrivateKey, err := base64.StdEncoding.DecodeString(privateKey)
+	if err != nil {
+		return "", fmt.Errorf("could not decode key: %w", err)
 	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	signedToken, err = token.SignedString([]byte(w.SecretKey))
+	key, err := jwt.ParseRSAPrivateKeyFromPEM(decodedPrivateKey)
 
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("create: parse key: %w", err)
 	}
-	return signedToken, nil
-}
 
-func (w *JwtWrapper) ValidateToken(signedToken, tokenType string) (claims *jwtClaims, err error) {
-	token, err := jwt.ParseWithClaims(
-		signedToken,
-		&jwtClaims{},
-		func(token *jwt.Token) (interface{}, error) {
-			return []byte(w.SecretKey), nil
-		},
-	)
+	now := time.Now().UTC()
+
+	claims := make(jwt.MapClaims)
+	claims["sub"] = payload
+	claims["exp"] = now.Add(ttl).Unix()
+	claims["iat"] = now.Unix()
+	claims["nbf"] = now.Unix()
+
+	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
 
 	if err != nil {
-		return
+		return "", fmt.Errorf("create: sign token: %w", err)
 	}
 
-	claims, ok := token.Claims.(*jwtClaims)
+	return token, nil
+}
 
-	if !ok {
-		return nil, errors.New("Couldn't parse claims")
+func ValidateToken(token string, publicKey string) (interface{}, error) {
+	decodedPublicKey, err := base64.StdEncoding.DecodeString(publicKey)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode: %w", err)
 	}
 
-	if claims.ExpiresAt < time.Now().Local().Unix() {
-		return nil, errors.New("JWT is expired")
+	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedPublicKey)
+
+	if err != nil {
+		return "", fmt.Errorf("validate: parse key: %w", err)
 	}
 
-	if tokenType == "refresh" && claims.Issuer != "refresh" {
-		return nil, errors.New("token not refresh")
+	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected method: %s", t.Header["alg"])
+		}
+		return key, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("validate: %w", err)
 	}
 
-	return claims, nil
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok || !parsedToken.Valid {
+		return nil, fmt.Errorf("validate: invalid token")
+	}
 
+	return claims["sub"], nil
 }

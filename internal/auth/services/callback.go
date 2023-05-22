@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"lastbiz/auth-service/internal/provider"
+	"lastbiz/auth-service/internal/utils"
 	"lastbiz/auth-service/pkg/auth"
 	"lastbiz/auth-service/pkg/user"
 	"net/http"
@@ -166,8 +167,23 @@ func (s Service) Callback(ctx context.Context, request *auth.CallbackRequest) (*
 
 	//User exists login
 	//generate token access_token refresh_token
-	accessToken, err := s.Jwt.GenerateTokenAccess(u)
-	refreshToken, err := s.Jwt.GenerateTokenRefresh(u)
+	accessToken, err := utils.CreateToken(s.AccessTokenDuration, u.GetId(), s.PrivateKeyAccess)
+
+	if err != nil {
+		return &auth.CallbackResponse{
+			Status: http.StatusInternalServerError,
+			Error:  "error create token",
+		}, nil
+	}
+
+	refreshToken, err := utils.CreateToken(s.RefreshTokenDuration, u.GetId(), s.PrivateKeyRefresh)
+
+	if err != nil {
+		return &auth.CallbackResponse{
+			Status: http.StatusInternalServerError,
+			Error:  "error create token",
+		}, nil
+	}
 	return &auth.CallbackResponse{
 		Status: http.StatusOK,
 		Token: &auth.Token{

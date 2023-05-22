@@ -53,8 +53,8 @@ func (s Service) LoginByPassword(ctx context.Context, request *auth.LoginByPassw
 		}, nil
 	}
 
-	token, err := s.Jwt.GenerateTokenAccess(u.GetUser())
-	refresh, err := s.Jwt.GenerateTokenRefresh(u.GetUser())
+	token, err := utils.CreateToken(s.AccessTokenDuration, u.GetUser().GetId(), s.PrivateKeyAccess)
+	refresh, err := utils.CreateToken(s.RefreshTokenDuration, u.GetUser().GetId(), s.PrivateKeyRefresh)
 
 	if err != nil {
 		return &auth.LoginResponse{

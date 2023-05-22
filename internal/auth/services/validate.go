@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"lastbiz/auth-service/internal/utils"
 	"lastbiz/auth-service/pkg/auth"
 	"lastbiz/auth-service/pkg/user"
 	"net/http"
@@ -17,7 +18,7 @@ func (s Service) Validate(ctx context.Context, request *auth.ValidateRequest) (*
 		}, nil
 	}
 
-	tok, err := s.Jwt.ValidateToken(token, "access")
+	tok, err := utils.ValidateToken(token, s.PrivateKeyAccess)
 	if err != nil {
 		return &auth.ValidateResponse{
 			Status: http.StatusNotFound,
@@ -26,7 +27,7 @@ func (s Service) Validate(ctx context.Context, request *auth.ValidateRequest) (*
 	}
 	//check user is exists
 	u, err := s.userService.GetUser(ctx, &user.UserGetRequest{
-		UserId: tok.Id,
+		UserId: tok.(uint32),
 	})
 	if u.Status != 200 {
 		return &auth.ValidateResponse{
@@ -37,6 +38,6 @@ func (s Service) Validate(ctx context.Context, request *auth.ValidateRequest) (*
 
 	return &auth.ValidateResponse{
 		Status: http.StatusOK,
-		UserId: int64(tok.Id),
+		UserId: int64(tok.(uint32)),
 	}, nil
 }

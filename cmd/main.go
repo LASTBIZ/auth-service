@@ -9,7 +9,6 @@ import (
 	"lastbiz/auth-service/internal/password"
 	"lastbiz/auth-service/internal/provider"
 	"lastbiz/auth-service/internal/provider/providers"
-	"lastbiz/auth-service/internal/utils"
 	auth2 "lastbiz/auth-service/pkg/auth"
 	"lastbiz/auth-service/pkg/logging"
 	"lastbiz/auth-service/pkg/postgres"
@@ -55,13 +54,6 @@ func main() {
 		*providerStorage,
 	)
 
-	jwt := utils.JwtWrapper{
-		SecretKey:              cfg.JWT.SecretKey,
-		Issuer:                 cfg.JWT.Issuer,
-		ExpirationHoursRefresh: int64(cfg.JWT.ExpirationHoursRefresh),
-		ExpirationHoursAccess:  int64(cfg.JWT.ExpirationHoursAccess),
-	}
-
 	providerService := provider.NewProviderService(*providerStorage, prs)
 	logging.Info(ctx, "connect user service")
 	userService := user.InitServiceClient(ctx, cfg)
@@ -69,13 +61,25 @@ func main() {
 	projectService := project.InitServiceClient(ctx, cfg)
 
 	authRedis := auth.NewAuthRedis(redisClient)
+
+	accessDuration, err := time.ParseDuration(cfg.JWT.ExpirationHoursAccess)
+	if err != nil {
+		panic(err)
+	}
+	refreshDuration, err := time.ParseDuration(cfg.JWT.ExpirationHoursRefresh)
+	if err != nil {
+		panic(err)
+	}
 	authService := services.NewAuthService(
 		*passService,
 		*providerService,
 		userService,
 		*authRedis,
-		jwt,
+		cfg.JWT.SecretKeyAccess,
+		cfg.JWT.SecretKeyRefresh,
 		projectService,
+		accessDuration,
+		refreshDuration,
 	)
 
 	lis, err := net.Listen("tcp", "0.0.0.0:"+cfg.GRPCPort)

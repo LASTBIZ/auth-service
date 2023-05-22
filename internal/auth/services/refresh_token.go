@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"lastbiz/auth-service/internal/utils"
 	"lastbiz/auth-service/pkg/auth"
 	"lastbiz/auth-service/pkg/user"
 	"net/http"
@@ -17,7 +18,7 @@ func (s Service) RefreshToken(ctx context.Context, request *auth.RefreshTokenReq
 		}, nil
 	}
 
-	tok, err := s.Jwt.ValidateToken(token, "refresh")
+	tok, err := utils.ValidateToken(token, s.PrivateKeyRefresh)
 	if err != nil {
 		return &auth.RefreshTokenResponse{
 			Status: http.StatusNotFound,
@@ -26,10 +27,24 @@ func (s Service) RefreshToken(ctx context.Context, request *auth.RefreshTokenReq
 	}
 
 	u, err := s.userService.GetUser(ctx, &user.UserGetRequest{
-		UserId: tok.Id,
+		UserId: tok.(uint32),
 	})
 
-	accessToken, err := s.Jwt.GenerateTokenAccess(u.GetUser())
+	if err != nil {
+		return &auth.RefreshTokenResponse{
+			Status: http.StatusInternalServerError,
+			Error:  "the user belonging to this token no logger exists",
+		}, nil
+	}
+
+	if u.GetStatus() != 200 {
+		return &auth.RefreshTokenResponse{
+			Status: http.StatusInternalServerError,
+			Error:  "the user belonging to this token no logger exists",
+		}, nil
+	}
+
+	accessToken, err := utils.CreateToken(s.AccessTokenDuration, u.GetUser().GetId(), s.PrivateKeyAccess)
 
 	if err != nil {
 		return &auth.RefreshTokenResponse{
@@ -38,7 +53,7 @@ func (s Service) RefreshToken(ctx context.Context, request *auth.RefreshTokenReq
 		}, nil
 	}
 
-	refreshToken, err := s.Jwt.GenerateTokenRefresh(u.GetUser())
+	refreshToken, err := utils.CreateToken(s.RefreshTokenDuration, u.GetUser().GetId(), s.PrivateKeyRefresh)
 
 	if err != nil {
 		return &auth.RefreshTokenResponse{

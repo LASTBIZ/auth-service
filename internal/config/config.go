@@ -11,10 +11,10 @@ type Config struct {
 	GRPCPort       string `yaml:"grpc_port" env:"GRPC_PORT" env-required:"true"`
 	UserServiceURL string `yaml:"userServiceURL" env:"USER_SERVICE_URL" env-required:"true"`
 	JWT            struct {
-		SecretKey              string `yaml:"secret_key" env:"SECRET_KEY" env-required:"true"`
-		Issuer                 string `yaml:"issuer" env:"ISSUER" env-required:"true"`
-		ExpirationHoursAccess  int    `yaml:"expiry_access_token" env:"EXPIRY_ACCESS_TOKEN" env-required:"true"`
-		ExpirationHoursRefresh int    `yaml:"expiry_refresh_token" env:"EXPIRY_REFRESH_TOKEN" env-required:"true"`
+		SecretKeyAccess        string `yaml:"secret_key_access" env:"SECRET_KEY_ACCESS" env-required:"true"`
+		SecretKeyRefresh       string `yaml:"secret_key_refresh" env:"SECRET_KEY_REFRESH" env-required:"true"`
+		ExpirationHoursAccess  string `yaml:"expiry_access_token" env:"EXPIRY_ACCESS_TOKEN" env-required:"true"`
+		ExpirationHoursRefresh string `yaml:"expiry_refresh_token" env:"EXPIRY_REFRESH_TOKEN" env-required:"true"`
 	} `yaml:"jwt"`
 	Postgres struct {
 		Host     string `yaml:"host" env:"POSTGRES_HOST" env-required:"true"`
