@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package api.user;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "user-service/api/user;user";
+option java_multiple_files = true;
+option java_package = "api.user";
+
+service User {
+	rpc CreateUser (CreateUserRequest) returns (UserInfoResponse);
+	rpc UpdateUser (UpdateUserRequest) returns (google.protobuf.Empty);
+	rpc DeleteUser (IdRequest) returns (google.protobuf.Empty);
+	rpc GetUserById (IdRequest) returns (UserInfoResponse);
+	rpc GetUserByEmail (EmailRequest) returns (UserInfoResponse);
+	rpc ListUser (ListUserRequest) returns (UserListResponse);
+}
+
+message CreateUserRequest {
+	string email = 1;
+	string first_name = 2;
+	string last_name = 3;
+}
+
+message UpdateUserRequest {
+	int64 id = 1;
+	string first_name = 2;
+	string last_name = 3;
+	string role = 4;
+	bool isVerify = 5;
+	string phone = 6;
+	string organization = 7;
+	Messenger messenger = 8;
+	bool blocked = 9;
+}
+
+message EmailRequest {
+	string email = 1;
+}
+
+message IdRequest {
+	int64 id = 1;
+}
+message GetUserReply {}
+
+message ListUserRequest {
+	uint32 pn = 1;
+	uint32 pSize = 2;
+}
+
+message UserListResponse {
+	int32 total = 1;
+	repeated UserInfoResponse data = 2;
+}
+
+message UserInfoResponse {
+	uint32 id = 1;
+	string email = 2;
+	string phone = 3;
+	bool   is_verify = 4;
+	string last_name = 5;
+	string first_name = 6;
+	string full_name = 7;
+	google.protobuf.Timestamp created_at = 8;
+	google.protobuf.Timestamp updated_at = 9;
+	string organization = 10;
+	bool blocked = 11;
+	string role = 12;
+	Messenger messengers = 13;
+}
+
+message Messenger {
+	string KakaoTalk = 1;
+	string Telegram = 2;
+	string WhatsApp = 3;
+	string Line = 4;
+	string Signal = 5;
+}
+
+

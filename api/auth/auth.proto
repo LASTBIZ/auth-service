@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package api.auth;
+
+option go_package = "auth-service/api/auth;auth";
+option java_multiple_files = true;
+option java_package = "api.auth";
+
+service Auth {
+	rpc CreateAuth (CreateAuthRequest) returns (CreateAuthReply);
+	rpc UpdateAuth (UpdateAuthRequest) returns (UpdateAuthReply);
+	rpc DeleteAuth (DeleteAuthRequest) returns (DeleteAuthReply);
+	rpc GetAuth (GetAuthRequest) returns (GetAuthReply);
+	rpc ListAuth (ListAuthRequest) returns (ListAuthReply);
+}
+
+message CreateAuthRequest {}
+message CreateAuthReply {}
+
+message UpdateAuthRequest {}
+message UpdateAuthReply {}
+
+message DeleteAuthRequest {}
+message DeleteAuthReply {}
+
+message GetAuthRequest {}
+message GetAuthReply {}
+
+message ListAuthRequest {}
+message ListAuthReply {}
