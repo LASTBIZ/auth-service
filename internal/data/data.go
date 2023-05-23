@@ -29,7 +29,7 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 	return &Data{}, cleanup, nil
 }
 
-func NewUserServiceClient(ac *conf.Auth, sr *conf.Service) user.UserClient {
+func NewUserServiceClient(sr *conf.Service) user.UserClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
 		grpc.WithEndpoint(sr.User.Endpoint),
