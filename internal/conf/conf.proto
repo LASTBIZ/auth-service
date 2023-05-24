@@ -8,8 +8,9 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
-  Service service = 3;
+  Service services = 3;
   Auth auth = 4;
+  Providers providers = 5;
 }
 
 message Server {
@@ -37,8 +38,32 @@ message Data {
 }
 
 message Auth {
-
+  message Access {
+    string private = 1;
+    string expiry = 2;
+  }
+  message Refresh {
+    string private = 1;
+    string expiry = 2;
+  }
+  Access access = 1;
+  Refresh refresh = 2;
 }
+
+message Providers {
+  message Google {
+    string client_id = 1;
+    string client_secret = 2;
+  }
+  message Facebook {
+    string client_id = 1;
+    string client_secret = 2;
+  }
+  string redirect_url = 1;
+  Google google = 2;
+  Facebook facebook = 3;
+}
+
 
 message Service {
   message User {

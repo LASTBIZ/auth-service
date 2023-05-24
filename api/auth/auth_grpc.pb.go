@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,22 +20,26 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Auth_CreateAuth_FullMethodName = "/api.auth.Auth/CreateAuth"
-	Auth_UpdateAuth_FullMethodName = "/api.auth.Auth/UpdateAuth"
-	Auth_DeleteAuth_FullMethodName = "/api.auth.Auth/DeleteAuth"
-	Auth_GetAuth_FullMethodName    = "/api.auth.Auth/GetAuth"
-	Auth_ListAuth_FullMethodName   = "/api.auth.Auth/ListAuth"
+	Auth_Register_FullMethodName       = "/api.auth.Auth/Register"
+	Auth_Login_FullMethodName          = "/api.auth.Auth/Login"
+	Auth_Validate_FullMethodName       = "/api.auth.Auth/Validate"
+	Auth_RefreshToken_FullMethodName   = "/api.auth.Auth/RefreshToken"
+	Auth_Callback_FullMethodName       = "/api.auth.Auth/Callback"
+	Auth_ChangePassword_FullMethodName = "/api.auth.Auth/ChangePassword"
+	Auth_ProviderAuth_FullMethodName   = "/api.auth.Auth/ProviderAuth"
 )
 
 // AuthClient is the client API for Auth service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthClient interface {
-	CreateAuth(ctx context.Context, in *CreateAuthRequest, opts ...grpc.CallOption) (*CreateAuthReply, error)
-	UpdateAuth(ctx context.Context, in *UpdateAuthRequest, opts ...grpc.CallOption) (*UpdateAuthReply, error)
-	DeleteAuth(ctx context.Context, in *DeleteAuthRequest, opts ...grpc.CallOption) (*DeleteAuthReply, error)
-	GetAuth(ctx context.Context, in *GetAuthRequest, opts ...grpc.CallOption) (*GetAuthReply, error)
-	ListAuth(ctx context.Context, in *ListAuthRequest, opts ...grpc.CallOption) (*ListAuthReply, error)
+	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	Callback(ctx context.Context, in *CallbackRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ProviderAuth(ctx context.Context, in *ProviderAuthRequest, opts ...grpc.CallOption) (*ProviderAuthResponse, error)
 }
 
 type authClient struct {
@@ -45,45 +50,63 @@ func NewAuthClient(cc grpc.ClientConnInterface) AuthClient {
 	return &authClient{cc}
 }
 
-func (c *authClient) CreateAuth(ctx context.Context, in *CreateAuthRequest, opts ...grpc.CallOption) (*CreateAuthReply, error) {
-	out := new(CreateAuthReply)
-	err := c.cc.Invoke(ctx, Auth_CreateAuth_FullMethodName, in, out, opts...)
+func (c *authClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Auth_Register_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *authClient) UpdateAuth(ctx context.Context, in *UpdateAuthRequest, opts ...grpc.CallOption) (*UpdateAuthReply, error) {
-	out := new(UpdateAuthReply)
-	err := c.cc.Invoke(ctx, Auth_UpdateAuth_FullMethodName, in, out, opts...)
+func (c *authClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, Auth_Login_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *authClient) DeleteAuth(ctx context.Context, in *DeleteAuthRequest, opts ...grpc.CallOption) (*DeleteAuthReply, error) {
-	out := new(DeleteAuthReply)
-	err := c.cc.Invoke(ctx, Auth_DeleteAuth_FullMethodName, in, out, opts...)
+func (c *authClient) Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Auth_Validate_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *authClient) GetAuth(ctx context.Context, in *GetAuthRequest, opts ...grpc.CallOption) (*GetAuthReply, error) {
-	out := new(GetAuthReply)
-	err := c.cc.Invoke(ctx, Auth_GetAuth_FullMethodName, in, out, opts...)
+func (c *authClient) RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, Auth_RefreshToken_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *authClient) ListAuth(ctx context.Context, in *ListAuthRequest, opts ...grpc.CallOption) (*ListAuthReply, error) {
-	out := new(ListAuthReply)
-	err := c.cc.Invoke(ctx, Auth_ListAuth_FullMethodName, in, out, opts...)
+func (c *authClient) Callback(ctx context.Context, in *CallbackRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, Auth_Callback_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Auth_ChangePassword_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) ProviderAuth(ctx context.Context, in *ProviderAuthRequest, opts ...grpc.CallOption) (*ProviderAuthResponse, error) {
+	out := new(ProviderAuthResponse)
+	err := c.cc.Invoke(ctx, Auth_ProviderAuth_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,11 +117,13 @@ func (c *authClient) ListAuth(ctx context.Context, in *ListAuthRequest, opts ...
 // All implementations must embed UnimplementedAuthServer
 // for forward compatibility
 type AuthServer interface {
-	CreateAuth(context.Context, *CreateAuthRequest) (*CreateAuthReply, error)
-	UpdateAuth(context.Context, *UpdateAuthRequest) (*UpdateAuthReply, error)
-	DeleteAuth(context.Context, *DeleteAuthRequest) (*DeleteAuthReply, error)
-	GetAuth(context.Context, *GetAuthRequest) (*GetAuthReply, error)
-	ListAuth(context.Context, *ListAuthRequest) (*ListAuthReply, error)
+	Register(context.Context, *RegisterRequest) (*emptypb.Empty, error)
+	Login(context.Context, *LoginRequest) (*TokenResponse, error)
+	Validate(context.Context, *ValidateRequest) (*emptypb.Empty, error)
+	RefreshToken(context.Context, *RefreshTokenRequest) (*TokenResponse, error)
+	Callback(context.Context, *CallbackRequest) (*TokenResponse, error)
+	ChangePassword(context.Context, *ChangePasswordRequest) (*emptypb.Empty, error)
+	ProviderAuth(context.Context, *ProviderAuthRequest) (*ProviderAuthResponse, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -106,20 +131,26 @@ type AuthServer interface {
 type UnimplementedAuthServer struct {
 }
 
-func (UnimplementedAuthServer) CreateAuth(context.Context, *CreateAuthRequest) (*CreateAuthReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateAuth not implemented")
+func (UnimplementedAuthServer) Register(context.Context, *RegisterRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (UnimplementedAuthServer) UpdateAuth(context.Context, *UpdateAuthRequest) (*UpdateAuthReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateAuth not implemented")
+func (UnimplementedAuthServer) Login(context.Context, *LoginRequest) (*TokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedAuthServer) DeleteAuth(context.Context, *DeleteAuthRequest) (*DeleteAuthReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteAuth not implemented")
+func (UnimplementedAuthServer) Validate(context.Context, *ValidateRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Validate not implemented")
 }
-func (UnimplementedAuthServer) GetAuth(context.Context, *GetAuthRequest) (*GetAuthReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAuth not implemented")
+func (UnimplementedAuthServer) RefreshToken(context.Context, *RefreshTokenRequest) (*TokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RefreshToken not implemented")
 }
-func (UnimplementedAuthServer) ListAuth(context.Context, *ListAuthRequest) (*ListAuthReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListAuth not implemented")
+func (UnimplementedAuthServer) Callback(context.Context, *CallbackRequest) (*TokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Callback not implemented")
+}
+func (UnimplementedAuthServer) ChangePassword(context.Context, *ChangePasswordRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
+}
+func (UnimplementedAuthServer) ProviderAuth(context.Context, *ProviderAuthRequest) (*ProviderAuthResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProviderAuth not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 
@@ -134,92 +165,128 @@ func RegisterAuthServer(s grpc.ServiceRegistrar, srv AuthServer) {
 	s.RegisterService(&Auth_ServiceDesc, srv)
 }
 
-func _Auth_CreateAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateAuthRequest)
+func _Auth_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServer).CreateAuth(ctx, in)
+		return srv.(AuthServer).Register(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Auth_CreateAuth_FullMethodName,
+		FullMethod: Auth_Register_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).CreateAuth(ctx, req.(*CreateAuthRequest))
+		return srv.(AuthServer).Register(ctx, req.(*RegisterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Auth_UpdateAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateAuthRequest)
+func _Auth_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServer).UpdateAuth(ctx, in)
+		return srv.(AuthServer).Login(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Auth_UpdateAuth_FullMethodName,
+		FullMethod: Auth_Login_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).UpdateAuth(ctx, req.(*UpdateAuthRequest))
+		return srv.(AuthServer).Login(ctx, req.(*LoginRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Auth_DeleteAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteAuthRequest)
+func _Auth_Validate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServer).DeleteAuth(ctx, in)
+		return srv.(AuthServer).Validate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Auth_DeleteAuth_FullMethodName,
+		FullMethod: Auth_Validate_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).DeleteAuth(ctx, req.(*DeleteAuthRequest))
+		return srv.(AuthServer).Validate(ctx, req.(*ValidateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Auth_GetAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAuthRequest)
+func _Auth_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RefreshTokenRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServer).GetAuth(ctx, in)
+		return srv.(AuthServer).RefreshToken(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Auth_GetAuth_FullMethodName,
+		FullMethod: Auth_RefreshToken_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).GetAuth(ctx, req.(*GetAuthRequest))
+		return srv.(AuthServer).RefreshToken(ctx, req.(*RefreshTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Auth_ListAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListAuthRequest)
+func _Auth_Callback_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CallbackRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServer).ListAuth(ctx, in)
+		return srv.(AuthServer).Callback(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Auth_ListAuth_FullMethodName,
+		FullMethod: Auth_Callback_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).ListAuth(ctx, req.(*ListAuthRequest))
+		return srv.(AuthServer).Callback(ctx, req.(*CallbackRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_ChangePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangePasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).ChangePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auth_ChangePassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).ChangePassword(ctx, req.(*ChangePasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_ProviderAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProviderAuthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).ProviderAuth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auth_ProviderAuth_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).ProviderAuth(ctx, req.(*ProviderAuthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -232,24 +299,32 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AuthServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateAuth",
-			Handler:    _Auth_CreateAuth_Handler,
+			MethodName: "Register",
+			Handler:    _Auth_Register_Handler,
 		},
 		{
-			MethodName: "UpdateAuth",
-			Handler:    _Auth_UpdateAuth_Handler,
+			MethodName: "Login",
+			Handler:    _Auth_Login_Handler,
 		},
 		{
-			MethodName: "DeleteAuth",
-			Handler:    _Auth_DeleteAuth_Handler,
+			MethodName: "Validate",
+			Handler:    _Auth_Validate_Handler,
 		},
 		{
-			MethodName: "GetAuth",
-			Handler:    _Auth_GetAuth_Handler,
+			MethodName: "RefreshToken",
+			Handler:    _Auth_RefreshToken_Handler,
 		},
 		{
-			MethodName: "ListAuth",
-			Handler:    _Auth_ListAuth_Handler,
+			MethodName: "Callback",
+			Handler:    _Auth_Callback_Handler,
+		},
+		{
+			MethodName: "ChangePassword",
+			Handler:    _Auth_ChangePassword_Handler,
+		},
+		{
+			MethodName: "ProviderAuth",
+			Handler:    _Auth_ProviderAuth_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

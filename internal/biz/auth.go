@@ -1,36 +1,269 @@
 package biz
 
 import (
+	"auth-service/api/user"
+	"auth-service/internal/provider"
+	"auth-service/internal/token"
+	"auth-service/internal/utils"
+	"context"
+	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
-// Greeter is a Greeter model.
-type Greeter struct {
-	Hello string
+// AuthUsecase is a Auth usecase.
+type AuthUseCase struct {
+	uh       *HashUseCase
+	up       *ProviderUseCase
+	uc       user.UserClient
+	log      *log.Helper
+	provider *provider.Struct
+	claims   *token.JwtClaims
 }
 
-// GreeterRepo is a Greater repo.
-type GreeterRepo interface {
-	Save(context.Context, *Greeter) (*Greeter, error)
-	Update(context.Context, *Greeter) (*Greeter, error)
-	FindByID(context.Context, int64) (*Greeter, error)
-	ListByHello(context.Context, string) ([]*Greeter, error)
-	ListAll(context.Context) ([]*Greeter, error)
+type Token struct {
+	AccessToken  string
+	RefreshToken string
 }
 
-// GreeterUsecase is a Greeter usecase.
-type GreeterUsecase struct {
-	repo GreeterRepo
-	log  *log.Helper
+// NewAuthUsecase new a Auth usecase.
+func NewAuthUsecase(uh *HashUseCase, up *ProviderUseCase, provider *provider.Struct, claims *token.JwtClaims, logger log.Logger) *AuthUseCase {
+	return &AuthUseCase{uh: uh, log: log.NewHelper(logger), up: up, provider: provider, claims: claims}
 }
 
-// NewGreeterUsecase new a Greeter usecase.
-func NewGreeterUsecase(repo GreeterRepo, logger log.Logger) *GreeterUsecase {
-	return &GreeterUsecase{repo: repo, log: log.NewHelper(logger)}
+func (au *AuthUseCase) Register(ctx context.Context, email, firstName, lastName, password string) (bool, error) {
+	u, err := au.uc.CreateUser(ctx, &user.CreateUserRequest{
+		Email:     email,
+		FirstName: firstName,
+		LastName:  lastName,
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	//TODO project investor create
+	password = utils.HashPassword(password)
+	_, err = au.uh.Create(ctx, &Hash{
+		UserID: u.Id,
+		Hash:   password,
+	})
+
+	if err != nil {
+		_, err := au.uc.DeleteUser(ctx, &user.IdRequest{
+			Id: int64(u.Id),
+		})
+		if err != nil {
+			return false, err
+		}
+		//TODO delete investor
+		return false, err
+	}
+
+	return true, nil
 }
 
-// CreateGreeter creates a Greeter, and returns the new Greeter.
-func (uc *GreeterUsecase) CreateGreeter(ctx context.Context, g *Greeter) (*Greeter, error) {
-	uc.log.WithContext(ctx).Infof("CreateGreeter: %v", g.Hello)
-	return uc.repo.Save(ctx, g)
+func (au *AuthUseCase) CreateState(provider string) (string, error) {
+	prov, ok := au.provider.Providers[provider]
+	if !ok {
+		return "", errors.NotFound("PROVIDER_NOT_FOUND", "provider not found")
+	}
+
+	return prov.GenerateOAuthToken(utils.GenerateState()), nil
+}
+
+func (au *AuthUseCase) Login(ctx context.Context, email, password string) (*Token, error) {
+	u, err := au.uc.GetUserByEmail(ctx, &user.EmailRequest{
+		Email: email,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	hash, err := au.uh.GetHashByUserId(ctx, u.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !utils.CheckPasswordHash(password, hash.Hash) {
+		return nil, errors.Unauthorized("WRONG_PASSWORD", "password is not match")
+	}
+
+	access, err := au.claims.Access.CreateToken(hash.UserID)
+	if err != nil {
+		return nil, errors.InternalServer("ERROR_CREATE_TOKEN", "error create token")
+	}
+
+	refresh, err := au.claims.Refresh.CreateToken(hash.UserID)
+	if err != nil {
+		return nil, errors.InternalServer("ERROR_CREATE_TOKEN", "error create token")
+	}
+
+	token := &Token{
+		AccessToken:  access,
+		RefreshToken: refresh,
+	}
+
+	return token, nil
+}
+
+func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state string) (*Token, error) {
+	prov, ok := au.provider.Providers[provider]
+	if !ok {
+		return nil, errors.NotFound("PROVIDER_NOT_FOUND", "provider not found")
+	}
+	//TODO check state
+
+	token, err := prov.Callback(code)
+	if err != nil {
+		return nil, errors.New(505, "PROVIDER_CALLBACK_ERROR", "provider callback error")
+	}
+
+	userProv, err := prov.GetUser(token)
+	if err != nil {
+		return nil, errors.New(505, "PROVIDER_CALLBACK_ERROR", "provider callback error")
+	}
+
+	//create user
+	_, err = au.up.GetProviderByEmail(ctx, userProv.Email)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			//register user
+			u, err := au.uc.CreateUser(ctx, &user.CreateUserRequest{
+				Email:     userProv.Email,
+				FirstName: userProv.GivenName,
+				LastName:  userProv.FamilyName,
+			})
+
+			if err != nil {
+				return nil, err
+			}
+
+			_, err = au.up.Create(ctx, &Provider{
+				Email:        userProv.Email,
+				UserID:       u.Id,
+				Provider:     provider,
+				AccessToken:  token.AccessToken,
+				RefreshToken: token.RefreshToken,
+				TokenType:    token.TokenType,
+			})
+
+			if err != nil {
+				//TODO delete user
+				return nil, err
+			}
+		}
+		return nil, err
+	}
+
+	u, err := au.uc.GetUserByEmail(ctx, &user.EmailRequest{
+		Email: userProv.Email,
+	})
+
+	_, err = au.uc.UpdateUser(ctx, &user.UpdateUserRequest{
+		Id:           int64(u.Id),
+		FirstName:    userProv.GivenName,
+		LastName:     userProv.FamilyName,
+		Role:         u.Role,
+		IsVerify:     userProv.VerifyEmail,
+		Phone:        u.Phone,
+		Organization: u.Organization,
+		Messenger:    u.Messengers,
+		Blocked:      u.Blocked,
+	})
+
+	_, err = au.up.Update(ctx, &Provider{
+		Email:        userProv.Email,
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	access, err := au.claims.Access.CreateToken(u.Id)
+	if err != nil {
+		return nil, errors.InternalServer("ERROR_CREATE_TOKEN", "error create token")
+	}
+
+	refresh, err := au.claims.Refresh.CreateToken(u.Id)
+	if err != nil {
+		return nil, errors.InternalServer("ERROR_CREATE_TOKEN", "error create token")
+	}
+
+	tk := &Token{
+		AccessToken:  access,
+		RefreshToken: refresh,
+	}
+	return tk, nil
+}
+
+func (au *AuthUseCase) Validate(ctx context.Context, token string) (bool, error) {
+	_, err := au.claims.Access.ValidateToken(token)
+	if err != nil {
+		return false, errors.Unauthorized("WRONG_TOKEN", "wrong token")
+	}
+	return true, nil
+}
+
+func (au *AuthUseCase) RefreshToken(refreshToken string) (*Token, error) {
+	id, err := au.claims.Refresh.ValidateToken(refreshToken)
+	if err != nil {
+		return nil, errors.Unauthorized("WRONG_TOKEN", "wrong token")
+	}
+
+	access, err := au.claims.Access.CreateToken(id)
+	if err != nil {
+		return nil, errors.InternalServer("ERROR_CREATE_TOKEN", "error create token")
+	}
+
+	refresh, err := au.claims.Refresh.CreateToken(id)
+	if err != nil {
+		return nil, errors.InternalServer("ERROR_CREATE_TOKEN", "error create token")
+	}
+
+	tk := &Token{
+		AccessToken:  access,
+		RefreshToken: refresh,
+	}
+	return tk, nil
+}
+
+func (au *AuthUseCase) ChangePassword(ctx context.Context, userId uint32, password, newPassword string) (bool, error) {
+	u, err := au.uc.GetUserById(ctx, &user.IdRequest{
+		Id: int64(userId),
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	hash, err := au.uh.GetHashByUserId(ctx, u.Id)
+
+	if err != nil {
+		if errors.IsNotFound(err) && password == "" {
+			_, err := au.uh.Create(ctx, &Hash{
+				UserID: u.Id,
+				Hash:   utils.HashPassword(newPassword),
+			})
+			if err != nil {
+				return false, err
+			}
+		}
+		return false, err
+	}
+
+	if !utils.CheckPasswordHash(password, hash.Hash) {
+		return false, errors.Unauthorized("WRONG_PASSWORD", "password is not match")
+	}
+
+	_, err = au.uh.Update(ctx, &Hash{ID: hash.ID, Hash: utils.HashPassword(newPassword)})
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

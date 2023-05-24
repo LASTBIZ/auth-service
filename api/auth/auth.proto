@@ -2,29 +2,64 @@ syntax = "proto3";
 
 package api.auth;
 
+import "google/protobuf/empty.proto";
+
 option go_package = "auth-service/api/auth;auth";
 option java_multiple_files = true;
 option java_package = "api.auth";
 
 service Auth {
-	rpc CreateAuth (CreateAuthRequest) returns (CreateAuthReply);
-	rpc UpdateAuth (UpdateAuthRequest) returns (UpdateAuthReply);
-	rpc DeleteAuth (DeleteAuthRequest) returns (DeleteAuthReply);
-	rpc GetAuth (GetAuthRequest) returns (GetAuthReply);
-	rpc ListAuth (ListAuthRequest) returns (ListAuthReply);
+	rpc Register(RegisterRequest) returns (google.protobuf.Empty) {}
+	rpc Login(LoginRequest) returns (TokenResponse) {}
+	rpc Validate(ValidateRequest) returns (google.protobuf.Empty) {}
+	rpc RefreshToken(RefreshTokenRequest) returns(TokenResponse) {}
+	rpc Callback(CallbackRequest) returns (TokenResponse) {}
+	rpc ChangePassword(ChangePasswordRequest) returns(google.protobuf.Empty) {}
+	rpc ProviderAuth(ProviderAuthRequest) returns (ProviderAuthResponse){}
 }
 
-message CreateAuthRequest {}
-message CreateAuthReply {}
+message ProviderAuthRequest {
+	string provider = 1;
+}
 
-message UpdateAuthRequest {}
-message UpdateAuthReply {}
+message ProviderAuthResponse {
+	string redirect = 1;
+}
 
-message DeleteAuthRequest {}
-message DeleteAuthReply {}
+message RegisterRequest {
+	string email = 1;
+	string password = 2;
+	string provider = 3;
+	string first_name = 4;
+	string last_name = 5;
+}
 
-message GetAuthRequest {}
-message GetAuthReply {}
+message LoginRequest {
+	string email = 1;
+	string password = 2;
+}
 
-message ListAuthRequest {}
-message ListAuthReply {}
+message ValidateRequest {
+	string token = 1;
+}
+
+message ChangePasswordRequest {
+	string password = 1;
+	string new_password = 2;
+	uint32 user_id = 3;
+}
+
+message TokenResponse {
+	string accessToken = 1;
+	string refreshToken = 2;
+}
+
+message RefreshTokenRequest {
+	string refresh_token = 1;
+}
+
+message CallbackRequest {
+	string provider = 1;
+	string oauth_code = 2;
+	string state = 3;
+}

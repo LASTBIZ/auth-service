@@ -9,8 +9,10 @@ import (
 	"auth-service/internal/biz"
 	"auth-service/internal/conf"
 	"auth-service/internal/data"
+	"auth-service/internal/provider"
 	"auth-service/internal/server"
 	"auth-service/internal/service"
+	"auth-service/internal/token"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
@@ -18,6 +20,6 @@ import (
 )
 
 // wireApp init kratos application.
-func wireApp(*conf.Server, *conf.Data, log.Logger) (*kratos.App, func(), error) {
-	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp))
+func wireApp(*conf.Server, *conf.Data, *conf.Auth, *conf.Providers, log.Logger) (*kratos.App, func(), error) {
+	panic(wire.Build(server.ProviderSet, token.NewJwtClaims, provider.Set, data.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp))
 }

@@ -1,10 +1,22 @@
 server:
-  http:
-    addr: 0.0.0.0:8000
-    timeout: 1s
   grpc:
     addr: 0.0.0.0:9000
     timeout: 1s
+auth:
+  access:
+    private:
+    expiry:
+  refresh:
+    private:
+    expiry:
+providers:
+  redirect_url:
+  google:
+    client_id:
+    client_secret:
+  facebook:
+    client_id:
+    client_secret:
 data:
   database:
     driver: mysql
@@ -13,6 +25,6 @@ data:
     addr: 127.0.0.1:6379
     read_timeout: 0.2s
     write_timeout: 0.2s
-  services:
-    user:
-      endpoint:
+services:
+  user:
+    endpoint:

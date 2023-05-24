@@ -10,27 +10,36 @@ import (
 	"auth-service/internal/biz"
 	"auth-service/internal/conf"
 	"auth-service/internal/data"
+	"auth-service/internal/provider"
 	"auth-service/internal/server"
 	"auth-service/internal/service"
-
+	"auth-service/internal/token"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+)
+
+import (
+	_ "go.uber.org/automaxprocs"
 )
 
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, providers *conf.Providers, logger log.Logger) (*kratos.App, func(), error) {
 	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+	hashRepo := data.NewHashRepo(dataData, logger)
+	hashUseCase := biz.NewHashUseCase(hashRepo, logger)
+	providerRepo := data.NewProviderRepo(dataData, logger)
+	providerUseCase := biz.NewProviderUseCase(providerRepo, logger)
+	providerStruct := provider.NewProviders(providers)
+	jwtClaims := token.NewJwtClaims(auth)
+	authUseCase := biz.NewAuthUsecase(hashUseCase, providerUseCase, providerStruct, jwtClaims, logger)
+	authService := service.NewAuthService(authUseCase, logger)
+	grpcServer := server.NewGRPCServer(confServer, authService, logger)
+	app := newApp(logger, grpcServer)
 	return app, func() {
 		cleanup()
 	}, nil
