@@ -200,12 +200,12 @@ func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state strin
 	return tk, nil
 }
 
-func (au *AuthUseCase) Validate(ctx context.Context, token string) (bool, error) {
-	_, err := au.claims.Access.ValidateToken(token)
+func (au *AuthUseCase) Validate(ctx context.Context, token string) (uint32, error) {
+	id, err := au.claims.Access.ValidateToken(token)
 	if err != nil {
-		return false, errors.Unauthorized("WRONG_TOKEN", "wrong token")
+		return 0, errors.Unauthorized("WRONG_TOKEN", "wrong token")
 	}
-	return true, nil
+	return id.(uint32), nil
 }
 
 func (au *AuthUseCase) RefreshToken(refreshToken string) (*Token, error) {

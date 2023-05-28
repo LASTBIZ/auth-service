@@ -9,13 +9,17 @@ option java_multiple_files = true;
 option java_package = "api.auth";
 
 service Auth {
-	rpc Register(RegisterRequest) returns (google.protobuf.Empty) {}
-	rpc Login(LoginRequest) returns (TokenResponse) {}
-	rpc Validate(ValidateRequest) returns (google.protobuf.Empty) {}
-	rpc RefreshToken(RefreshTokenRequest) returns(TokenResponse) {}
-	rpc Callback(CallbackRequest) returns (TokenResponse) {}
-	rpc ChangePassword(ChangePasswordRequest) returns(google.protobuf.Empty) {}
-	rpc ProviderAuth(ProviderAuthRequest) returns (ProviderAuthResponse){}
+	rpc Register(RegisterRequest) returns (google.protobuf.Empty);
+	rpc Login(LoginRequest) returns (TokenResponse);
+	rpc Validate(ValidateRequest) returns (ValidateReply);
+	rpc RefreshToken(RefreshTokenRequest) returns(TokenResponse);
+	rpc Callback(CallbackRequest) returns (TokenResponse);
+	rpc ChangePassword(ChangePasswordRequest) returns(google.protobuf.Empty);
+	rpc ProviderAuth(ProviderAuthRequest) returns (ProviderAuthResponse);
+}
+
+message ValidateReply {
+	uint32 user_id = 1;
 }
 
 message ProviderAuthRequest {

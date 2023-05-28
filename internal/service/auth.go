@@ -48,12 +48,14 @@ func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Toke
 	return &pb.TokenResponse{AccessToken: tok.AccessToken, RefreshToken: tok.RefreshToken}, nil
 }
 
-func (s *AuthService) Validate(ctx context.Context, req *pb.ValidateRequest) (*empty.Empty, error) {
-	_, err := s.ua.Validate(ctx, req.Token)
+func (s *AuthService) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.ValidateReply, error) {
+	id, err := s.ua.Validate(ctx, req.Token)
 	if err != nil {
 		return nil, err
 	}
-	return &empty.Empty{}, nil
+	return &pb.ValidateReply{
+		UserId: id,
+	}, nil
 }
 
 func (s *AuthService) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.TokenResponse, error) {
