@@ -50,6 +50,14 @@ func (p providerRepo) CreateProvider(ctx context.Context, pr *biz.Provider) (*bi
 	return providerInfoRes, nil
 }
 
+func (p providerRepo) CreateState(ctx context.Context) (string, error) {
+
+}
+
+func (p providerRepo) CheckState(ctx context.Context, state string) (string, error) {
+
+}
+
 func (p providerRepo) UpdateProvider(ctx context.Context, pr *biz.Provider) (bool, error) {
 	var provider Provider
 	result := p.data.db.Where(&Provider{UserID: pr.UserID}).Or(&Provider{Email: pr.Email}).First(&provider)

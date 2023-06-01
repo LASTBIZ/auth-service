@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package api.investor;
+
+import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+
+option go_package = "project-service/api/investor;investor";
+option java_multiple_files = true;
+option java_package = "api.investor";
+
+service Investor {
+  rpc CreateInvestor (CreateInvestorRequest) returns (google.protobuf.Empty);
+  rpc DeleteInvestor (DeleteInvestorRequest) returns (google.protobuf.Empty);
+  rpc AddMoneyInvestor (AddMoneyInvestorRequest) returns (google.protobuf.Empty);
+  rpc RemoveMoneyInvestor (RemoveMoneyInvestorRequest) returns (google.protobuf.Empty);
+  rpc SetMoneyInvestor (SetMoneyInvestorRequest) returns (google.protobuf.Empty);
+  rpc ListInvestor (ListInvestorRequest) returns (ListInvestorReply);
+}
+
+message ListInvestorRequest {
+  uint64 project_id = 1 [(validate.rules).uint64.gt = 0];
+  uint32 pageNum = 2;
+  uint32 pageSize = 3;
+}
+
+message ListInvestorReply {
+  message Investor {
+    string full_name = 1;
+  }
+  repeated Investor investors = 1;
+  int32 total = 2;
+}
+
+message CreateInvestorRequest {
+  string full_name = 1;
+  uint64 user_id = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message AddMoneyInvestorRequest {
+  int32 money = 1 [(validate.rules).int32.gt = 0];
+  uint64 user_id = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message RemoveMoneyInvestorRequest {
+  int32 money = 1 [(validate.rules).int32.gt = 0];
+  uint64 user_id = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message SetMoneyInvestorRequest {
+  int32 money = 1 [(validate.rules).int32.gt = 0];
+  uint64 user_id = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message DeleteInvestorRequest {
+  uint64 id = 1 [(validate.rules).uint64.gt = 0];
+}

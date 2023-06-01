@@ -1,6 +1,7 @@
 package data
 
 import (
+	"auth-service/api/investor"
 	"auth-service/api/user"
 	"auth-service/internal/biz"
 	"auth-service/internal/conf"
@@ -8,6 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -21,20 +23,25 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewUserServiceClient, NewDB, NewTransaction, NewHashRepo, NewProviderRepo)
+var ProviderSet = wire.NewSet(NewData, NewUserServiceClient, NewInvestorServiceClient, NewDB, NewRedis, NewTransaction, NewHashRepo, NewProviderRepo)
 
 // Data .
 type Data struct {
-	db *gorm.DB
-	uc user.UserClient
+	db  *gorm.DB
+	rdb *redis.Client
+	uc  user.UserClient
 }
 
 // NewData .
-func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
+func NewData(db *gorm.DB, rdb *redis.Client, uc user.UserClient, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{}, cleanup, nil
+	return &Data{
+		db:  db,
+		rdb: rdb,
+		uc:  uc,
+	}, cleanup, nil
 }
 
 type contextTxKey struct{}
@@ -74,6 +81,22 @@ func NewUserServiceClient(sr *conf.Service) user.UserClient {
 	return c
 }
 
+func NewInvestorServiceClient(sr *conf.Service) investor.InvestorClient {
+	conn, err := grpc.DialInsecure(
+		context.Background(),
+		grpc.WithEndpoint(sr.Investor.Endpoint),
+		grpc.WithMiddleware(
+			tracing.Client(),
+			recovery.Recovery()),
+		grpc.WithTimeout(2*time.Second),
+	)
+	if err != nil {
+		panic(err)
+	}
+	c := investor.NewInvestorClient(conn)
+	return c
+}
+
 func NewDB(c *conf.Data) *gorm.DB {
 	newLogger := logger.New(
 		slog.New(os.Stdout, "\r\n", slog.LstdFlags),
@@ -94,6 +117,22 @@ func NewDB(c *conf.Data) *gorm.DB {
 		log.Errorf("failed opening connection to postgres: %v", err)
 		panic("failed to connect database")
 	}
-	//TODO Automigrate
+	db.AutoMigrate(&Hash{}, &Provider{})
 	return db
+}
+
+func NewRedis(c *conf.Data) *redis.Client {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:         c.Redis.Addr,
+		DB:           0,
+		ReadTimeout:  c.Redis.ReadTimeout.AsDuration(),
+		WriteTimeout: c.Redis.WriteTimeout.AsDuration(),
+	})
+
+	err := rdb.Ping(context.Background()).Err()
+	if err != nil {
+		log.Errorf("failed opening connection to redis: %v", err)
+		panic("failed to connect redis")
+	}
+	return rdb
 }

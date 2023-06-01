@@ -41,10 +41,12 @@ message Auth {
   message Access {
     string private = 1;
     string expiry = 2;
+    string public = 3;
   }
   message Refresh {
     string private = 1;
     string expiry = 2;
+    string public = 3;
   }
   Access access = 1;
   Refresh refresh = 2;
@@ -66,8 +68,9 @@ message Providers {
 
 
 message Service {
-  message User {
+  message Service {
     string endpoint = 1;
   }
-  User user = 1;
+  Service user = 1;
+  Service investor = 2;
 }

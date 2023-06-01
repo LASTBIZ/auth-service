@@ -1,6 +1,7 @@
 package biz
 
 import (
+	"auth-service/api/investor"
 	"auth-service/api/user"
 	"auth-service/internal/provider"
 	"auth-service/internal/token"
@@ -15,6 +16,7 @@ type AuthUseCase struct {
 	uh       *HashUseCase
 	up       *ProviderUseCase
 	uc       user.UserClient
+	ic       investor.InvestorClient
 	log      *log.Helper
 	provider *provider.Struct
 	claims   *token.JwtClaims
@@ -26,8 +28,8 @@ type Token struct {
 }
 
 // NewAuthUsecase new a Auth usecase.
-func NewAuthUsecase(uh *HashUseCase, up *ProviderUseCase, provider *provider.Struct, claims *token.JwtClaims, logger log.Logger) *AuthUseCase {
-	return &AuthUseCase{uh: uh, log: log.NewHelper(logger), up: up, provider: provider, claims: claims}
+func NewAuthUsecase(uh *HashUseCase, up *ProviderUseCase, ic investor.InvestorClient, provider *provider.Struct, claims *token.JwtClaims, logger log.Logger) *AuthUseCase {
+	return &AuthUseCase{uh: uh, ic: ic, log: log.NewHelper(logger), up: up, provider: provider, claims: claims}
 }
 
 func (au *AuthUseCase) Register(ctx context.Context, email, firstName, lastName, password string) (bool, error) {
@@ -41,7 +43,15 @@ func (au *AuthUseCase) Register(ctx context.Context, email, firstName, lastName,
 		return false, err
 	}
 
-	//TODO project investor create
+	_, err = au.ic.CreateInvestor(ctx, &investor.CreateInvestorRequest{
+		FullName: u.FirstName + " " + u.LastName,
+		UserId:   uint64(u.Id),
+	})
+
+	if err != nil {
+		return false, err
+	}
+
 	password = utils.HashPassword(password)
 	_, err = au.uh.Create(ctx, &Hash{
 		UserID: u.Id,
@@ -52,10 +62,9 @@ func (au *AuthUseCase) Register(ctx context.Context, email, firstName, lastName,
 		_, err := au.uc.DeleteUser(ctx, &user.IdRequest{
 			Id: int64(u.Id),
 		})
-		if err != nil {
-			return false, err
-		}
-		//TODO delete investor
+		_, err = au.ic.DeleteInvestor(ctx, &investor.DeleteInvestorRequest{
+			Id: uint64(u.Id),
+		})
 		return false, err
 	}
 
