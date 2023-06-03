@@ -40,7 +40,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, conf
 	investorClient := data.NewInvestorServiceClient(confService)
 	providerStruct := provider.NewProviders(providers)
 	jwtClaims := token.NewJwtClaims(auth)
-	authUseCase := biz.NewAuthUsecase(hashUseCase, providerUseCase, investorClient, providerStruct, jwtClaims, logger)
+	authUseCase := biz.NewAuthUsecase(hashUseCase, userClient, providerUseCase, investorClient, providerStruct, jwtClaims, logger)
 	authService := service.NewAuthService(authUseCase, logger)
 	grpcServer := server.NewGRPCServer(confServer, authService, logger)
 	app := newApp(logger, grpcServer)
