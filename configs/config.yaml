@@ -29,3 +29,5 @@ data:
 services:
   user:
     endpoint: ${USER_ENDPOINT}
+  investor:
+    endpoint: ${INVESTOR_ENDPOINT}

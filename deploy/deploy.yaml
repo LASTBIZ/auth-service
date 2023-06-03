@@ -54,6 +54,8 @@ spec:
               value: "10.129.183.51:6379"
             - name: USER_ENDPOINT
               value: "user-service:3000"
+            - name: INVESTOR_ENDPOINT
+              value: "project-service:3000"
             - name: REDIRECT_URL
               value: "https://api.lastmbiz.tech/callback"
             - name: GOOGLE_CLIENT_ID
