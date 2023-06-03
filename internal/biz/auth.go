@@ -28,8 +28,8 @@ type Token struct {
 }
 
 // NewAuthUsecase new a Auth usecase.
-func NewAuthUsecase(uh *HashUseCase, up *ProviderUseCase, ic investor.InvestorClient, provider *provider.Struct, claims *token.JwtClaims, logger log.Logger) *AuthUseCase {
-	return &AuthUseCase{uh: uh, ic: ic, log: log.NewHelper(logger), up: up, provider: provider, claims: claims}
+func NewAuthUsecase(uh *HashUseCase, uc user.UserClient, up *ProviderUseCase, ic investor.InvestorClient, provider *provider.Struct, claims *token.JwtClaims, logger log.Logger) *AuthUseCase {
+	return &AuthUseCase{uh: uh, uc: uc, ic: ic, log: log.NewHelper(logger), up: up, provider: provider, claims: claims}
 }
 
 func (au *AuthUseCase) Register(ctx context.Context, email, firstName, lastName, password string) (bool, error) {
