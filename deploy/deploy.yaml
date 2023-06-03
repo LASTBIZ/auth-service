@@ -30,17 +30,17 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: auth-service
-                  key: access-private
+                  key: access_private
             - name: ACCESS_PUBLIC
               valueFrom:
                 secretKeyRef:
                   name: auth-service
-                  key: access-public
+                  key: access_public
             - name: REFRESH_PRIVATE
               valueFrom:
                 secretKeyRef:
                   name: auth-service
-                  key: refresh-private
+                  key: refresh_private
             - name: REFRESH_PUBLIC
               valueFrom:
                 secretKeyRef:
