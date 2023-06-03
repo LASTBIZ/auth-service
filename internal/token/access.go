@@ -2,7 +2,6 @@ package token
 
 import (
 	"auth-service/internal/conf"
-	"encoding/base64"
 	"fmt"
 	"github.com/golang-jwt/jwt"
 	"time"
@@ -23,11 +22,11 @@ func NewAccess(cfg *conf.Auth_Access) *Access {
 }
 
 func (a *Access) CreateToken(payload interface{}) (string, error) {
-	decodedPrivateKey, err := base64.StdEncoding.DecodeString(a.privateKey)
-	if err != nil {
-		return "", fmt.Errorf("could not decode key: %w", err)
-	}
-	key, err := jwt.ParseRSAPrivateKeyFromPEM(decodedPrivateKey)
+	//decodedPrivateKey, err := base64.StdEncoding.DecodeString(a.privateKey)
+	//if err != nil {
+	//	return "", fmt.Errorf("could not decode key: %w", err)
+	//}
+	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(a.privateKey))
 
 	if err != nil {
 		return "", fmt.Errorf("create: parse key: %w", err)
@@ -51,12 +50,12 @@ func (a *Access) CreateToken(payload interface{}) (string, error) {
 }
 
 func (a *Access) ValidateToken(token string) (interface{}, error) {
-	decodedPublicKey, err := base64.StdEncoding.DecodeString(a.publicKey)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode: %w", err)
-	}
+	//decodedPublicKey, err := base64.StdEncoding.DecodeString(a.publicKey)
+	//if err != nil {
+	//	return nil, fmt.Errorf("could not decode: %w", err)
+	//}
 
-	key, err := jwt.ParseRSAPublicKeyFromPEM(decodedPublicKey)
+	key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(a.publicKey))
 
 	if err != nil {
 		return "", fmt.Errorf("validate: parse key: %w", err)
