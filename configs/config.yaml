@@ -9,7 +9,7 @@ auth:
     public: ${ACCESS_PUBLIC}
   refresh:
     private: ${REFRESH_PRIVATE}
-    expiry: ${REFRESH_PRIVATE}
+    expiry: ${REFRESH_EXPIRY}
     public: ${REFRESH_PRIVATE}
 providers:
   redirect_url: ${REDIRECT_URL}
