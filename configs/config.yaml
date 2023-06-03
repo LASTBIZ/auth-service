@@ -10,7 +10,7 @@ auth:
   refresh:
     private: ${REFRESH_PRIVATE}
     expiry: ${REFRESH_EXPIRY}
-    public: ${REFRESH_PRIVATE}
+    public: ${REFRESH_PUBLIC}
 providers:
   redirect_url: ${REDIRECT_URL}
   google:
