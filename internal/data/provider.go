@@ -2,10 +2,12 @@ package data
 
 import (
 	"auth-service/internal/biz"
+	"auth-service/internal/utils"
 	"context"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
+	"time"
 )
 
 type Provider struct {
@@ -51,11 +53,20 @@ func (p providerRepo) CreateProvider(ctx context.Context, pr *biz.Provider) (*bi
 }
 
 func (p providerRepo) CreateState(ctx context.Context) (string, error) {
-
+	var state = utils.GenerateState()
+	err := p.data.rdb.Set(ctx, "state-"+state, "test", time.Hour).Err()
+	if err != nil {
+		return "", err
+	}
+	return state, nil
 }
 
-func (p providerRepo) CheckState(ctx context.Context, state string) (string, error) {
-
+func (p providerRepo) CheckState(ctx context.Context, state string) error {
+	_, err := p.data.rdb.Get(ctx, "state-"+state).Result()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (p providerRepo) UpdateProvider(ctx context.Context, pr *biz.Provider) (bool, error) {

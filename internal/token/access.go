@@ -15,14 +15,10 @@ type Access struct {
 }
 
 func NewAccess(cfg *conf.Auth_Access) *Access {
-	d, err := time.ParseDuration(cfg.Expiry)
-	if err != nil {
-		panic(err)
-	}
 	return &Access{
-		t:          d,
+		t:          cfg.Expiry.AsDuration(),
 		privateKey: cfg.Private,
-		publicKey:  "", //TODO add config
+		publicKey:  cfg.Public,
 	}
 }
 

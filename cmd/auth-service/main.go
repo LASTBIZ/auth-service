@@ -59,7 +59,7 @@ func main() {
 	)
 	c := config.New(
 		config.WithSource(
-			env.NewSource("AUTH_"),
+			env.NewSource(),
 			file.NewSource(flagconf),
 		),
 	)
@@ -74,7 +74,7 @@ func main() {
 		panic(err)
 	}
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, bc.Providers, logger)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Auth, bc.Services, bc.Providers, logger)
 	if err != nil {
 		panic(err)
 	}

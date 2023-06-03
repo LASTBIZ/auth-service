@@ -26,7 +26,7 @@ func NewFacebookProvider(
 		ClientID:     cfg.ClientId,
 		ClientSecret: cfg.ClientSecret,
 		Scopes:       []string{"public_profile", "email"},
-		RedirectURL:  redirectURL,
+		RedirectURL:  redirectURL + "/facebook",
 		Endpoint:     endpoints.Facebook,
 	}
 	return &Facebook{

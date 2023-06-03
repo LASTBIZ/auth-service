@@ -24,8 +24,7 @@ message Server {
 
 message Data {
   message Database {
-    string driver = 1;
-    string source = 2;
+    string source = 1;
   }
   message Redis {
     string network = 1;
@@ -40,12 +39,12 @@ message Data {
 message Auth {
   message Access {
     string private = 1;
-    string expiry = 2;
+    google.protobuf.Duration expiry = 2;
     string public = 3;
   }
   message Refresh {
     string private = 1;
-    string expiry = 2;
+    google.protobuf.Duration expiry = 2;
     string public = 3;
   }
   Access access = 1;

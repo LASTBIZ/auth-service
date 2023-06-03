@@ -77,7 +77,13 @@ func (au *AuthUseCase) CreateState(provider string) (string, error) {
 		return "", errors.NotFound("PROVIDER_NOT_FOUND", "provider not found")
 	}
 
-	return prov.GenerateOAuthToken(utils.GenerateState()), nil
+	state, err := au.up.CreateState(context.Background())
+
+	if err != nil {
+		return "", err
+	}
+
+	return prov.GenerateOAuthToken(state), nil
 }
 
 func (au *AuthUseCase) Login(ctx context.Context, email, password string) (*Token, error) {
@@ -122,7 +128,11 @@ func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state strin
 	if !ok {
 		return nil, errors.NotFound("PROVIDER_NOT_FOUND", "provider not found")
 	}
-	//TODO check state
+
+	err := au.up.CheckState(ctx, state)
+	if err != nil {
+		return nil, errors.NotFound("STATE_NOT_FOUND", "state not found")
+	}
 
 	token, err := prov.Callback(code)
 	if err != nil {

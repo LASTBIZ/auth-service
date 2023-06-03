@@ -1,13 +1,14 @@
 package utils
 
-import (
-	"crypto/rand"
-	"encoding/base64"
-)
+import "math/rand"
+
+var nonceChars = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
 func GenerateState() string {
-	b := make([]byte, 128)
-	rand.Read(b)
-	state := base64.URLEncoding.EncodeToString(b)
-	return state
+	var nonce = make([]rune, 8)
+	for i := range nonce {
+		nonce[i] = nonceChars[rand.Intn(len(nonceChars))]
+	}
+
+	return string(nonce)
 }

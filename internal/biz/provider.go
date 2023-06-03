@@ -22,6 +22,8 @@ type ProviderRepo interface {
 	DeleteProviderByUserId(ctx context.Context, userId uint32) (bool, error)
 	GetProviderByUserId(ctx context.Context, userId uint32) (*Provider, error)
 	GetProviderByEmail(ctx context.Context, email string) (*Provider, error)
+	CreateState(ctx context.Context) (string, error)
+	CheckState(ctx context.Context, state string) error
 }
 
 type ProviderUseCase struct {
@@ -51,4 +53,12 @@ func (pc *ProviderUseCase) GetProviderByUserId(ctx context.Context, userId uint3
 
 func (pc *ProviderUseCase) GetProviderByEmail(ctx context.Context, email string) (*Provider, error) {
 	return pc.repo.GetProviderByEmail(ctx, email)
+}
+
+func (pc *ProviderUseCase) CreateState(ctx context.Context) (string, error) {
+	return pc.repo.CreateState(ctx)
+}
+
+func (pc *ProviderUseCase) CheckState(ctx context.Context, state string) error {
+	return pc.repo.CheckState(ctx, state)
 }

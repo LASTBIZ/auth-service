@@ -26,7 +26,7 @@ func NewGoogleProvider(
 		ClientID:     cfg.ClientId,
 		ClientSecret: cfg.ClientSecret,
 		Scopes:       []string{"profile", "email"},
-		RedirectURL:  redirectURL,
+		RedirectURL:  redirectURL + "/google",
 		Endpoint:     google.Endpoint,
 	}
 	return &Google{

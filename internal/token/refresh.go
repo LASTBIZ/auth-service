@@ -15,14 +15,10 @@ type Refresh struct {
 }
 
 func NewRefresh(cfg *conf.Auth_Refresh) *Refresh {
-	d, err := time.ParseDuration(cfg.Expiry)
-	if err != nil {
-		panic(err)
-	}
 	return &Refresh{
-		t:          d,
+		t:          cfg.Expiry.AsDuration(),
 		privateKey: cfg.Private,
-		publicKey:  "", //TODO add config
+		publicKey:  cfg.Public,
 	}
 }
 

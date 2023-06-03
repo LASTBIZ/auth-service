@@ -25,8 +25,11 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, providers *conf.Providers, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
+func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, confService *conf.Service, providers *conf.Providers, logger log.Logger) (*kratos.App, func(), error) {
+	db := data.NewDB(confData)
+	client := data.NewRedis(confData)
+	userClient := data.NewUserServiceClient(confService)
+	dataData, cleanup, err := data.NewData(db, client, userClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -34,9 +37,10 @@ func wireApp(confServer *conf.Server, confData *conf.Data, auth *conf.Auth, prov
 	hashUseCase := biz.NewHashUseCase(hashRepo, logger)
 	providerRepo := data.NewProviderRepo(dataData, logger)
 	providerUseCase := biz.NewProviderUseCase(providerRepo, logger)
+	investorClient := data.NewInvestorServiceClient(confService)
 	providerStruct := provider.NewProviders(providers)
 	jwtClaims := token.NewJwtClaims(auth)
-	authUseCase := biz.NewAuthUsecase(hashUseCase, providerUseCase, providerStruct, jwtClaims, logger)
+	authUseCase := biz.NewAuthUsecase(hashUseCase, providerUseCase, investorClient, providerStruct, jwtClaims, logger)
 	authService := service.NewAuthService(authUseCase, logger)
 	grpcServer := server.NewGRPCServer(confServer, authService, logger)
 	app := newApp(logger, grpcServer)

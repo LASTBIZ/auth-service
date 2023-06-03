@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  labels:
+    app: auth-service
+spec:
+  selector:
+    matchLabels:
+      app: auth-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: IMAGE
+          ports:
+            - name: auth-service
+              containerPort: 9000
+          env:
+            - name: DB_SOURCE
+              valueFrom:
+               secretKeyRef:
+                 name: database
+                 key: connect
+            - name: ACCESS_PRIVATE
+              valueFrom:
+                secretKeyRef:
+                  name: auth_service
+                  key: access-private
+            - name: ACCESS_PUBLIC
+              valueFrom:
+                secretKeyRef:
+                  name: auth_service
+                  key: access-public
+            - name: REFRESH_PRIVATE
+              valueFrom:
+                secretKeyRef:
+                  name: auth_service
+                  key: refresh-private
+            - name: REFRESH_PUBLIC
+              valueFrom:
+                secretKeyRef:
+                  name: auth-service
+                  key: refresh_public
+            - name: ACCESS_EXPIRY
+              value: "24h"
+            - name: REFRESH_EXPIRY
+              value: "60d"
+            - name: REDIS_SOURCE
+              value: "10.129.183.51:6379"
+            - name: USER_ENDPOINT
+              value: "user-service:3000"
+            - name: REDIRECT_URL
+              value: "https://api.lastmbiz.tech/callback"
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: auth-service
+                  key: google_client_id
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-service
+                  key: google_client_secret
+            - name: FB_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: auth-service
+                  key: fb_client_id
+            - name: FB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-service
+                  key: fb_client_secret
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - port: 3000
+      targetPort: auth-service
