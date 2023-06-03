@@ -19,6 +19,5 @@ COPY ./configs/config.yaml /app/
 WORKDIR /app
 
 EXPOSE 9000
-VOLUME /data/conf
 
 CMD ["./auth-service", "-conf", "/app/config.yaml"]
