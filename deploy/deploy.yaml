@@ -47,9 +47,9 @@ spec:
                   name: auth-service
                   key: refresh_public
             - name: ACCESS_EXPIRY
-              value: "24h"
+              value: "86400s"
             - name: REFRESH_EXPIRY
-              value: "60d"
+              value: "5184000s"
             - name: REDIS_SOURCE
               value: "10.129.183.51:6379"
             - name: USER_ENDPOINT
