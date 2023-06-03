@@ -54,7 +54,7 @@ func (s *AuthService) Validate(ctx context.Context, req *pb.ValidateRequest) (*p
 		return nil, err
 	}
 	return &pb.ValidateReply{
-		UserId: id,
+		UserId: uint32(id),
 	}, nil
 }
 
