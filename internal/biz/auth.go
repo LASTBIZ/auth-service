@@ -124,12 +124,13 @@ func (au *AuthUseCase) Login(ctx context.Context, email, password string) (*Toke
 }
 
 func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state string) (*Token, error) {
+	context := context.Background()
 	prov, ok := au.provider.Providers[provider]
 	if !ok {
 		return nil, errors.NotFound("PROVIDER_NOT_FOUND", "provider not found")
 	}
 
-	err := au.up.CheckState(ctx, state)
+	err := au.up.CheckState(context, state)
 	if err != nil {
 		return nil, errors.NotFound("STATE_NOT_FOUND", "state not found")
 	}
@@ -145,11 +146,11 @@ func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state strin
 	}
 
 	//create user
-	_, err = au.up.GetProviderByEmail(ctx, userProv.Email)
+	_, err = au.up.GetProviderByEmail(context, userProv.Email)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			//register user
-			u, err := au.uc.CreateUser(ctx, &user.CreateUserRequest{
+			u, err := au.uc.CreateUser(context, &user.CreateUserRequest{
 				Email:     userProv.Email,
 				FirstName: userProv.GivenName,
 				LastName:  userProv.FamilyName,
@@ -159,7 +160,7 @@ func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state strin
 				return nil, err
 			}
 
-			_, err = au.up.Create(ctx, &Provider{
+			_, err = au.up.Create(context, &Provider{
 				Email:        userProv.Email,
 				UserID:       u.Id,
 				Provider:     provider,
@@ -169,18 +170,20 @@ func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state strin
 			})
 
 			if err != nil {
-				//TODO delete user
+				au.uc.DeleteUser(context, &user.IdRequest{
+					Id: int64(u.Id),
+				})
 				return nil, err
 			}
 		}
 		return nil, err
 	}
 
-	u, err := au.uc.GetUserByEmail(ctx, &user.EmailRequest{
+	u, err := au.uc.GetUserByEmail(context, &user.EmailRequest{
 		Email: userProv.Email,
 	})
 
-	_, err = au.uc.UpdateUser(ctx, &user.UpdateUserRequest{
+	_, err = au.uc.UpdateUser(context, &user.UpdateUserRequest{
 		Id:           int64(u.Id),
 		FirstName:    userProv.GivenName,
 		LastName:     userProv.FamilyName,
@@ -192,10 +195,13 @@ func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state strin
 		Blocked:      u.Blocked,
 	})
 
-	_, err = au.up.Update(ctx, &Provider{
+	_, err = au.up.Update(context, &Provider{
 		Email:        userProv.Email,
+		UserID:       u.Id,
+		Provider:     provider,
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.RefreshToken,
+		TokenType:    token.TokenType,
 	})
 
 	if err != nil {
