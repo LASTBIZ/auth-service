@@ -129,10 +129,10 @@ func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state strin
 		return nil, errors.NotFound("PROVIDER_NOT_FOUND", "provider not found")
 	}
 
-	//err := au.up.CheckState(ctx, state)
-	//if err != nil {
-	//	return nil, errors.NotFound("STATE_NOT_FOUND", "state not found")
-	//}
+	err := au.up.CheckState(ctx, state)
+	if err != nil {
+		return nil, errors.NotFound("STATE_NOT_FOUND", "state not found")
+	}
 
 	token, err := prov.Callback(code)
 	if err != nil {
