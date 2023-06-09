@@ -175,8 +175,9 @@ func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state strin
 				})
 				return nil, err
 			}
+		} else {
+			return nil, err
 		}
-		return nil, err
 	}
 
 	u, err := au.uc.GetUserByEmail(context, &user.EmailRequest{
