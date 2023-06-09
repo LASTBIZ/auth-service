@@ -23,7 +23,7 @@ type ProviderRepo interface {
 	GetProviderByUserId(ctx context.Context, userId uint32) (*Provider, error)
 	GetProviderByEmail(ctx context.Context, email string) (*Provider, error)
 	CreateState(ctx context.Context) (string, error)
-	CheckState(ctx context.Context, state string) error
+	//CheckState(ctx context.Context, state string) error
 }
 
 type ProviderUseCase struct {
@@ -59,6 +59,6 @@ func (pc *ProviderUseCase) CreateState(ctx context.Context) (string, error) {
 	return pc.repo.CreateState(ctx)
 }
 
-func (pc *ProviderUseCase) CheckState(ctx context.Context, state string) error {
-	return pc.repo.CheckState(ctx, state)
-}
+//func (pc *ProviderUseCase) CheckState(ctx context.Context, state string) error {
+//	return pc.repo.CheckState(ctx, state)
+//}
