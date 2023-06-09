@@ -4,6 +4,7 @@ import (
 	"auth-service/internal/biz"
 	"auth-service/internal/utils"
 	"context"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
@@ -63,6 +64,7 @@ func (p providerRepo) CreateState(ctx context.Context) (string, error) {
 
 func (p providerRepo) CheckState(ctx context.Context, state string) error {
 	_, err := p.data.rdb.Get(ctx, "state-"+state).Result()
+	fmt.Println(err, state)
 	if err != nil {
 		return err
 	}
