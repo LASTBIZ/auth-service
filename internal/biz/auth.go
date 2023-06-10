@@ -9,12 +9,14 @@ import (
 	"context"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
+	"time"
 )
 
 // AuthUsecase is a Auth usecase.
 type AuthUseCase struct {
 	uh       *HashUseCase
 	up       *ProviderUseCase
+	us       *SessionUseCase
 	uc       user.UserClient
 	ic       investor.InvestorClient
 	log      *log.Helper
@@ -28,8 +30,8 @@ type Token struct {
 }
 
 // NewAuthUsecase new a Auth usecase.
-func NewAuthUsecase(uh *HashUseCase, uc user.UserClient, up *ProviderUseCase, ic investor.InvestorClient, provider *provider.Struct, claims *token.JwtClaims, logger log.Logger) *AuthUseCase {
-	return &AuthUseCase{uh: uh, uc: uc, ic: ic, log: log.NewHelper(logger), up: up, provider: provider, claims: claims}
+func NewAuthUsecase(uh *HashUseCase, us *SessionUseCase, uc user.UserClient, up *ProviderUseCase, ic investor.InvestorClient, provider *provider.Struct, claims *token.JwtClaims, logger log.Logger) *AuthUseCase {
+	return &AuthUseCase{uh: uh, uc: uc, us: us, ic: ic, log: log.NewHelper(logger), up: up, provider: provider, claims: claims}
 }
 
 func (au *AuthUseCase) Register(ctx context.Context, email, firstName, lastName, password string) (bool, error) {
@@ -113,6 +115,27 @@ func (au *AuthUseCase) Login(ctx context.Context, email, password string) (*Toke
 	refresh, err := au.claims.Refresh.CreateToken(hash.UserID)
 	if err != nil {
 		return nil, errors.InternalServer("ERROR_CREATE_TOKEN", "error create token")
+	}
+
+	_, err = au.us.GetSessionByUserID(ctx, uint64(u.Id))
+	if err != nil {
+		if errors.IsNotFound(err) {
+			au.us.CreateSession(ctx, &Session{
+				UserID:       uint64(u.Id),
+				RefreshToken: refresh,
+				CreatedAt:    time.Now(),
+				ExpiresIn:    time.Now().Add(au.claims.Refresh.GetDuration()),
+			})
+		} else {
+			return nil, err
+		}
+	} else {
+		au.us.UpdateSession(ctx, &Session{
+			UserID:       uint64(u.Id),
+			RefreshToken: refresh,
+			CreatedAt:    time.Now(),
+			ExpiresIn:    time.Now().Add(au.claims.Refresh.GetDuration()),
+		})
 	}
 
 	token := &Token{
@@ -219,10 +242,32 @@ func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state strin
 		return nil, errors.InternalServer("ERROR_CREATE_TOKEN", "error create token")
 	}
 
+	_, err = au.us.GetSessionByUserID(ctx, uint64(u.Id))
+	if err != nil {
+		if errors.IsNotFound(err) {
+			au.us.CreateSession(ctx, &Session{
+				UserID:       uint64(u.Id),
+				RefreshToken: refresh,
+				CreatedAt:    time.Now(),
+				ExpiresIn:    time.Now().Add(au.claims.Refresh.GetDuration()),
+			})
+		} else {
+			return nil, err
+		}
+	} else {
+		au.us.UpdateSession(ctx, &Session{
+			UserID:       uint64(u.Id),
+			RefreshToken: refresh,
+			CreatedAt:    time.Now(),
+			ExpiresIn:    time.Now().Add(au.claims.Refresh.GetDuration()),
+		})
+	}
+
 	tk := &Token{
 		AccessToken:  access,
 		RefreshToken: refresh,
 	}
+
 	return tk, nil
 }
 
@@ -240,6 +285,11 @@ func (au *AuthUseCase) RefreshToken(refreshToken string) (*Token, error) {
 		return nil, errors.Unauthorized("WRONG_TOKEN", "wrong token")
 	}
 
+	s, err := au.us.GetSession(context.Background(), refreshToken)
+	if err != nil {
+		return nil, errors.Unauthorized("WRONG_TOKEN", "wrong token")
+	}
+
 	access, err := au.claims.Access.CreateToken(id)
 	if err != nil {
 		return nil, errors.InternalServer("ERROR_CREATE_TOKEN", "error create token")
@@ -249,6 +299,13 @@ func (au *AuthUseCase) RefreshToken(refreshToken string) (*Token, error) {
 	if err != nil {
 		return nil, errors.InternalServer("ERROR_CREATE_TOKEN", "error create token")
 	}
+
+	au.us.UpdateSession(context.Background(), &Session{
+		UserID:       s.UserID,
+		RefreshToken: refresh,
+		CreatedAt:    time.Now(),
+		ExpiresIn:    time.Now().Add(au.claims.Refresh.GetDuration()),
+	})
 
 	tk := &Token{
 		AccessToken:  access,
