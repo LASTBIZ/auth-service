@@ -3,6 +3,7 @@ package token
 import (
 	"auth-service/internal/conf"
 	"fmt"
+	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/golang-jwt/jwt"
 	"time"
 )
@@ -71,9 +72,19 @@ func (a *Access) ValidateToken(token string) (interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("validate: %w", err)
 	}
-
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
-	if !ok || !parsedToken.Valid {
+	if !ok {
+		return nil, fmt.Errorf("validate: invalid token")
+	}
+
+	err = claims.Valid()
+	if err != nil {
+		if err.Error() == "Token is expired" {
+			return nil, errors.InternalServer("EXPIRY_TOKEN", "token expiry")
+		}
+		return nil, err
+	}
+	if !parsedToken.Valid {
 		return nil, fmt.Errorf("validate: invalid token")
 	}
 

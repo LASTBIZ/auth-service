@@ -274,6 +274,9 @@ func (au *AuthUseCase) Callback(ctx context.Context, provider, code, state strin
 func (au *AuthUseCase) Validate(ctx context.Context, token string) (float64, error) {
 	id, err := au.claims.Access.ValidateToken(token)
 	if err != nil {
+		if errors.IsInternalServer(err) {
+			return 0, err
+		}
 		return 0, errors.Unauthorized("WRONG_TOKEN", "wrong token")
 	}
 	return id.(float64), nil
