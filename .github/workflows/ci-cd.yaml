@@ -6,10 +6,10 @@ on:
       - kratos
 
 env:
-  PROJECT_ID: sacred-bridge-386500
-  PROJECT_NUMBER: 582933165633
-  CLUSTER: 	autopilot-cluster-2
-  CLUSTER_ZONE: asia-northeast2
+  PROJECT_ID: oval-plate-389803
+  PROJECT_NUMBER: 930086028904
+  CLUSTER: cluster-1
+  CLUSTER_ZONE: asia-northeast1-b
   REPOSITORY: lastmbiz-registry
   REPOSITORY_REGION: asia-northeast3
   IMAGE: auth-service
