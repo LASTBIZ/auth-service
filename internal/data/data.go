@@ -117,7 +117,7 @@ func NewDB(c *conf.Data) *gorm.DB {
 		log.Errorf("failed opening connection to postgres: %v", err)
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&Hash{}, &Provider{})
+	db.AutoMigrate(&Hash{}, &Provider{}, &Session{})
 	return db
 }
 
