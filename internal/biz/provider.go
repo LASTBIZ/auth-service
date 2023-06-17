@@ -36,7 +36,7 @@ func NewProviderUseCase(repo ProviderRepo, logger log.Logger) *ProviderUseCase {
 }
 
 func (pc *ProviderUseCase) Create(ctx context.Context, p *Provider) (*Provider, error) {
-	return pc.Create(ctx, p)
+	return pc.repo.CreateProvider(ctx, p)
 }
 
 func (pc *ProviderUseCase) Update(ctx context.Context, p *Provider) (bool, error) {

@@ -6,7 +6,7 @@ import (
 )
 
 // ProviderSet is biz providers.
-var ProviderSet = wire.NewSet(NewHashUseCase, NewProviderUseCase, NewAuthUsecase)
+var ProviderSet = wire.NewSet(NewHashUseCase, NewProviderUseCase, NewSessionUseCase, NewAuthUsecase)
 
 //go:generate mockgen -destination=../mocks/usecase/biz.go -package=usecase . Transaction
 type Transaction interface {

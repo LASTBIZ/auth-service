@@ -79,3 +79,7 @@ func (a *Refresh) ValidateToken(token string) (interface{}, error) {
 
 	return claims["sub"], nil
 }
+
+func (a *Refresh) GetDuration() time.Duration {
+	return a.t
+}
