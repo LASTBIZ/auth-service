@@ -11,7 +11,7 @@ type Hash struct {
 	Hash   string
 }
 
-//go:generate mockgen -destination=../mocks/mrepo/user.go -package=mrepo . HashRepo
+//go:generate mockgen -destination=../mocks/mrepo/hash.go -package=mrepo . HashRepo
 type HashRepo interface {
 	CreateHash(context.Context, *Hash) (*Hash, error)
 	UpdateHash(ctx context.Context, hash *Hash) (bool, error)
