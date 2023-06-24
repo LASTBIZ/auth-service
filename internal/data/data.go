@@ -5,11 +5,13 @@ import (
 	"auth-service/api/user"
 	"auth-service/internal/biz"
 	"auth-service/internal/conf"
+	"auth-service/internal/utils"
 	"context"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/redis/go-redis/v9"
+	"github.com/sethvargo/go-password/password"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -37,6 +39,19 @@ func NewData(db *gorm.DB, rdb *redis.Client, uc user.UserClient, logger log.Logg
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
+
+	//TODO create admin user is not exists
+	createUser, err := uc.CreateUser(context.Background(), &user.CreateUserRequest{
+		Email:     "admin@lastmbiz.tech",
+		FirstName: "Admin",
+		LastName:  "Lastm",
+	})
+	if err == nil {
+		res, _ := password.Generate(64, 10, 10, false, false)
+		slog.Println("Admin password: ", res)
+		db.Model(&Hash{}).Create(&Hash{UserID: createUser.Id, Hash: utils.HashPassword(res)})
+	}
+
 	return &Data{
 		db:  db,
 		rdb: rdb,
@@ -78,6 +93,7 @@ func NewUserServiceClient(sr *conf.Service) user.UserClient {
 		panic(err)
 	}
 	c := user.NewUserClient(conn)
+
 	return c
 }
 
