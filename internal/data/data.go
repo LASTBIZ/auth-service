@@ -51,20 +51,30 @@ func NewData(db *gorm.DB, rdb *redis.Client, uc user.UserClient, logger log.Logg
 		slog.Println("Admin password: ", res)
 		db.Model(&Hash{}).Create(&Hash{UserID: createUser.Id, Hash: utils.HashPassword(res)})
 		uc.UpdateUser(context.Background(), &user.UpdateUserRequest{
-			Id:        int64(createUser.Id),
-			FirstName: "Admin",
-			LastName:  "Lastm",
-			Role:      "admin",
+			Id:           int64(createUser.Id),
+			FirstName:    "Admin",
+			LastName:     "Lastm",
+			Role:         "admin",
+			IsVerify:     true,
+			Phone:        "",
+			Organization: "",
+			Blocked:      false,
+			Messenger:    &user.Messenger{},
 		})
 	} else {
 		createUser, err = uc.GetUserByEmail(context.Background(), &user.EmailRequest{
 			Email: "admin@lastmbiz.tech",
 		})
 		uc.UpdateUser(context.Background(), &user.UpdateUserRequest{
-			Id:        int64(createUser.Id),
-			FirstName: "Admin",
-			LastName:  "Lastm",
-			Role:      "admin",
+			Id:           int64(createUser.Id),
+			FirstName:    "Admin",
+			LastName:     "Lastm",
+			Role:         "admin",
+			IsVerify:     true,
+			Phone:        "",
+			Organization: "",
+			Blocked:      false,
+			Messenger:    &user.Messenger{},
 		})
 	}
 
