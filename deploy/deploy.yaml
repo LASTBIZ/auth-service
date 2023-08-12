@@ -51,7 +51,7 @@ spec:
             - name: REFRESH_EXPIRY
               value: "5184000s"
             - name: REDIS_SOURCE
-              value: "10.175.230.43:6379"
+              value: "10.26.171.243:6379"
             - name: USER_ENDPOINT
               value: "user-service:3000"
             - name: INVESTOR_ENDPOINT
