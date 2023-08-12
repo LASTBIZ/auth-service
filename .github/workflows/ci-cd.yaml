@@ -6,12 +6,12 @@ on:
       - kratos
 
 env:
-  PROJECT_ID: oval-plate-389803
-  PROJECT_NUMBER: 930086028904
-  CLUSTER: cluster-1
-  CLUSTER_ZONE: asia-northeast1-b
+  PROJECT_ID: compelling-muse-395705
+  PROJECT_NUMBER: 657566098180
+  CLUSTER: autopilot-cluster-1 
+  CLUSTER_ZONE: us-central1
   REPOSITORY: lastmbiz-registry
-  REPOSITORY_REGION: asia-northeast3
+  REPOSITORY_REGION: us-west1
   IMAGE: auth-service
 
 jobs:
